@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button, Text, Surface } from 'react-native-paper';
-import { colors, spacing, typography } from '../theme/colors';
+import { TextInput, Button, Text, Surface, Icon } from 'react-native-paper';
+import { colors, spacing } from '../theme/colors';
 import useStore from '../store/useStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function SignupScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -17,8 +16,6 @@ export default function SignupScreen({ navigation }) {
 
     const handleSignup = async () => {
         if (!name || !email || !password) return;
-
-        // Reusing login action as it performs registration
         const success = await login(email, password, name);
         if (success) {
             navigation.replace('Home');
@@ -26,132 +23,170 @@ export default function SignupScreen({ navigation }) {
     };
 
     return (
-        <LinearGradient
-            colors={[colors.background, '#1E293B']}
-            style={styles.container}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-        >
-            <SafeAreaView style={styles.safeArea}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.content}
-                >
-                    <View style={styles.header}>
-                        <Text variant="displaySmall" style={styles.title}>Create Account</Text>
-                        <Text variant="headlineSmall" style={styles.subtitle}>Join Aapada Network</Text>
-                    </View>
-
-                    <Surface style={styles.form} elevation={4}>
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                mode="outlined"
-                                label="Full Name"
-                                placeholder="Enter your name"
-                                value={name}
-                                onChangeText={setName}
-                                left={<TextInput.Icon icon="account" />}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                mode="outlined"
-                                label="Email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                left={<TextInput.Icon icon="email" />}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                mode="outlined"
-                                label="Password"
-                                placeholder="Create a password"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
-                                left={<TextInput.Icon icon="lock" />}
-                                right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
-                            />
-                        </View>
-
-                        {error && (
-                            <Text style={{ color: colors.error, marginBottom: spacing.m, textAlign: 'center' }}>
-                                {error}
-                            </Text>
-                        )}
-
-                        <Button
-                            mode="contained"
-                            onPress={handleSignup}
-                            loading={loading}
-                            disabled={loading}
-                            style={styles.button}
-                            contentStyle={styles.buttonContent}
-                        >
-                            Sign Up
-                        </Button>
-
-                        <View style={styles.footer}>
-                            <Text style={styles.footerText}>Already have an account? </Text>
-                            <Button
-                                mode="text"
-                                onPress={() => navigation.navigate('Login')}
-                                compact
-                            >
-                                Login
-                            </Button>
-                        </View>
+        <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.content}
+            >
+                {/* Header */}
+                <View style={styles.headerArea}>
+                    <Surface style={styles.iconCircle} elevation={2}>
+                        <Icon source="account-plus" size={44} color={colors.primary} />
                     </Surface>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        </LinearGradient>
+                    <Text variant="headlineLarge" style={styles.title}>Create Account</Text>
+                    <Text variant="titleMedium" style={styles.subtitle}>
+                        Join the Aapada Network
+                    </Text>
+                </View>
+
+                {/* Form Card */}
+                <Surface style={styles.formCard} elevation={1}>
+                    <TextInput
+                        mode="outlined"
+                        label="Full Name"
+                        placeholder="Enter your name"
+                        value={name}
+                        onChangeText={setName}
+                        left={<TextInput.Icon icon="account-outline" />}
+                        style={styles.input}
+                        outlineStyle={styles.inputOutline}
+                    />
+
+                    <TextInput
+                        mode="outlined"
+                        label="Email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        left={<TextInput.Icon icon="email-outline" />}
+                        style={styles.input}
+                        outlineStyle={styles.inputOutline}
+                    />
+
+                    <TextInput
+                        mode="outlined"
+                        label="Password"
+                        placeholder="Create a password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        left={<TextInput.Icon icon="lock-outline" />}
+                        right={
+                            <TextInput.Icon
+                                icon={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                onPress={() => setShowPassword(!showPassword)}
+                            />
+                        }
+                        style={styles.input}
+                        outlineStyle={styles.inputOutline}
+                    />
+
+                    {error && (
+                        <Surface style={styles.errorBanner} elevation={0}>
+                            <Icon source="alert-circle" size={18} color={colors.error} />
+                            <Text variant="bodySmall" style={styles.errorText}>{error}</Text>
+                        </Surface>
+                    )}
+
+                    <Button
+                        mode="contained"
+                        onPress={handleSignup}
+                        loading={loading}
+                        disabled={loading}
+                        style={styles.signupButton}
+                        contentStyle={styles.signupButtonContent}
+                        labelStyle={styles.signupButtonLabel}
+                    >
+                        Sign Up
+                    </Button>
+
+                    <View style={styles.footer}>
+                        <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+                            Already have an account?
+                        </Text>
+                        <Button
+                            mode="text"
+                            onPress={() => navigation.navigate('Login')}
+                            compact
+                            labelStyle={{ fontWeight: '600' }}
+                        >
+                            Login
+                        </Button>
+                    </View>
+                </Surface>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-        justifyContent: 'center',
+        backgroundColor: colors.background,
     },
     content: {
+        flex: 1,
         padding: spacing.l,
         justifyContent: 'center',
     },
-    header: {
+    headerArea: {
         alignItems: 'center',
-        marginBottom: spacing.xl,
+        marginBottom: 32,
     },
-    title: {
-        color: colors.primary,
-        fontWeight: 'bold',
-        marginBottom: spacing.s,
-    },
-    subtitle: {
-        color: colors.textSecondary,
-    },
-    form: {
-        backgroundColor: colors.surface,
-        borderRadius: 20,
-        padding: spacing.l,
-    },
-    inputContainer: {
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: colors.secondaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: spacing.m,
     },
-    button: {
-        marginTop: spacing.s,
-        borderRadius: 8,
+    title: {
+        fontWeight: '800',
+        color: colors.onSurface,
     },
-    buttonContent: {
+    subtitle: {
+        color: colors.onSurfaceVariant,
+        marginTop: 4,
+    },
+    formCard: {
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 28,
+        padding: spacing.l,
+    },
+    input: {
+        marginBottom: spacing.m,
+        backgroundColor: colors.surface,
+    },
+    inputOutline: {
+        borderRadius: 16,
+    },
+    errorBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: colors.errorContainer,
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: spacing.m,
+    },
+    errorText: {
+        color: colors.onErrorContainer,
+        flex: 1,
+    },
+    signupButton: {
+        borderRadius: 20,
+        marginTop: spacing.s,
+    },
+    signupButtonContent: {
         paddingVertical: 6,
+    },
+    signupButtonLabel: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     footer: {
         flexDirection: 'row',
@@ -159,8 +194,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: spacing.l,
     },
-    footerText: {
-        color: colors.textSecondary,
-    },
 });
-

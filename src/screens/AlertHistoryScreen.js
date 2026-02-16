@@ -1,61 +1,76 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Text, Chip, Appbar, useTheme, ActivityIndicator } from 'react-native-paper';
+import { Card, Text, Chip, Appbar, Surface, Icon, useTheme } from 'react-native-paper';
 import { colors, spacing } from '../theme/colors';
 import useStore from '../store/useStore';
 import api from '../services/api';
 
-const getSeverityColor = (severity) => {
+const getSeverityConfig = (severity) => {
     switch (severity?.toUpperCase()) {
-        case 'CRITICAL': return colors.error;
-        case 'HIGH': return colors.accent;
-        case 'MEDIUM': return '#F59E0B';
-        default: return colors.success;
+        case 'CRITICAL':
+            return { bg: '#F9DEDC', color: '#B3261E' };
+        case 'HIGH':
+            return { bg: '#FFDBCF', color: '#C4441C' };
+        case 'MEDIUM':
+            return { bg: '#FFDEA9', color: '#795900' };
+        default:
+            return { bg: '#C4EECD', color: '#006D3A' };
     }
 };
 
-const getResponseIcon = (response) => {
+const getResponseConfig = (response) => {
     switch (response?.toUpperCase()) {
-        case 'SAFE': return 'check-circle';
-        case 'MEDICAL': return 'hospital-box';
-        case 'FIRE': return 'fire-truck';
-        case 'HELP': return 'alert-circle';
-        default: return 'message-alert';
+        case 'SAFE':
+            return { icon: 'check-circle', bg: '#C4EECD', color: '#006D3A' };
+        case 'MEDICAL':
+            return { icon: 'hospital-box', bg: '#F9DEDC', color: '#B3261E' };
+        case 'FIRE':
+            return { icon: 'fire', bg: '#FFDEA9', color: '#795900' };
+        case 'HELP':
+            return { icon: 'hand-wave', bg: '#EADDFF', color: '#6750A4' };
+        default:
+            return { icon: 'message-alert', bg: '#E7E0EC', color: '#49454F' };
     }
 };
 
 const HistoryCard = ({ item }) => {
-    const theme = useTheme();
+    const sev = getSeverityConfig(item.severity);
+    const resp = getResponseConfig(item.userResponse);
 
     return (
         <Card style={styles.card} mode="elevated">
-            <Card.Content>
+            <View style={[styles.indicator, { backgroundColor: sev.color }]} />
+            <Card.Content style={styles.cardContent}>
                 <View style={styles.cardHeader}>
                     <Text variant="titleMedium" style={styles.cardTitle}>{item.title}</Text>
                     <Chip
-                        icon={getResponseIcon(item.userResponse)}
-                        style={{ backgroundColor: theme.colors.surfaceVariant }}
-                        textStyle={{ color: theme.colors.onSurfaceVariant, fontSize: 12 }}
+                        icon={resp.icon}
+                        style={{ backgroundColor: resp.bg }}
+                        textStyle={{ color: resp.color, fontSize: 11, fontWeight: '600' }}
                         compact
                     >
                         {item.userResponse}
                     </Chip>
                 </View>
 
-                <Text variant="bodyMedium" style={{ color: theme.colors.primary, marginBottom: spacing.xs }}>
-                    📍 {item.targetRegion || 'All Areas'}
-                </Text>
+                <View style={styles.locationRow}>
+                    <Icon source="map-marker" size={14} color={colors.primary} />
+                    <Text variant="bodyMedium" style={{ color: colors.primary, marginLeft: 4 }}>
+                        {item.targetRegion || 'All Areas'}
+                    </Text>
+                </View>
 
                 <Text variant="bodySmall" numberOfLines={2} style={styles.cardDescription}>
                     {item.message}
                 </Text>
 
-                <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.s }}>
-                    Responded: {new Date(item.respondedAt).toLocaleString()}
-                </Text>
+                <View style={styles.timeRow}>
+                    <Icon source="clock-check-outline" size={14} color={colors.outline} />
+                    <Text variant="labelSmall" style={{ color: colors.outline, marginLeft: 4 }}>
+                        Responded: {new Date(item.respondedAt).toLocaleString()}
+                    </Text>
+                </View>
             </Card.Content>
-            <View style={[styles.indicator, { backgroundColor: getSeverityColor(item.severity) }]} />
         </Card>
     );
 };
@@ -64,27 +79,17 @@ export default function AlertHistoryScreen({ navigation }) {
     const { user } = useStore();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const theme = useTheme();
 
     const fetchHistory = async () => {
         if (!user?.id) return;
         setLoading(true);
         try {
-            // Mock data for now if API fails or isn't ready, but structure implies API exists
-            // const response = await api.get(`/alerts/history/${user.id}`);
-            // if (response.data.success) {
-            //     setHistory(response.data.data);
-            // }
-
-            // Using mock data to ensure UI renders for this task if API isn't fully ready with history
-            // In real scenario, uncomment above and remove this if API is ready
             const response = await api.get(`/alerts/history/${user.id}`);
             if (response.data.success) {
                 setHistory(response.data.data);
             } else {
                 setHistory([]);
             }
-
         } catch (error) {
             console.error('Failed to fetch history:', error);
         } finally {
@@ -97,30 +102,37 @@ export default function AlertHistoryScreen({ navigation }) {
     }, [user?.id]);
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <Appbar.Header style={{ backgroundColor: theme.colors.background }}>
+        <View style={styles.container}>
+            <Appbar.Header style={styles.appbar} elevated={false}>
                 <Appbar.BackAction onPress={() => navigation.goBack()} />
-                <Appbar.Content title="Alert History" />
+                <Appbar.Content
+                    title="Alert History"
+                    titleStyle={{ fontWeight: '700', color: colors.onSurface }}
+                />
             </Appbar.Header>
 
             <FlatList
                 data={history}
                 renderItem={({ item }) => <HistoryCard item={item} />}
-                keyExtractor={(item) => item._id || Math.random().toString()} // Fallback key
+                keyExtractor={(item) => item._id || Math.random().toString()}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
                     <RefreshControl
                         refreshing={loading}
                         onRefresh={fetchHistory}
-                        tintColor={theme.colors.primary}
+                        colors={[colors.primary]}
                     />
                 }
                 ListEmptyComponent={
                     !loading && (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyEmoji}>📭</Text>
-                            <Text variant="headlineSmall" style={styles.emptyTitle}>No History Yet</Text>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.secondary, textAlign: 'center' }}>
+                            <Surface style={styles.emptyIcon} elevation={0}>
+                                <Icon source="history" size={48} color={colors.primary} />
+                            </Surface>
+                            <Text variant="headlineSmall" style={styles.emptyTitle}>
+                                No History Yet
+                            </Text>
+                            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}>
                                 Alerts you respond to will appear here.
                             </Text>
                         </View>
@@ -134,13 +146,22 @@ export default function AlertHistoryScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
+    },
+    appbar: {
+        backgroundColor: colors.background,
     },
     listContent: {
         padding: spacing.l,
     },
     card: {
         marginBottom: spacing.m,
-        overflow: 'hidden', // For the indicator strip
+        overflow: 'hidden',
+        borderRadius: 20,
+        backgroundColor: colors.surfaceContainerLow,
+    },
+    cardContent: {
+        paddingLeft: spacing.l,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -150,11 +171,22 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         flex: 1,
-        fontWeight: 'bold',
+        fontWeight: '700',
+        color: colors.onSurface,
         marginRight: spacing.m,
     },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: spacing.xs,
+    },
     cardDescription: {
-        color: colors.textSecondary,
+        color: colors.onSurfaceVariant,
+        marginBottom: spacing.s,
+    },
+    timeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     indicator: {
         position: 'absolute',
@@ -162,18 +194,25 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         width: 4,
+        borderTopLeftRadius: 20,
+        borderBottomLeftRadius: 20,
     },
     emptyState: {
         padding: spacing.xl * 2,
         alignItems: 'center',
     },
-    emptyEmoji: {
-        fontSize: 64,
+    emptyIcon: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: spacing.m,
     },
     emptyTitle: {
+        fontWeight: '700',
+        color: colors.onSurface,
         marginBottom: spacing.s,
-        fontWeight: 'bold',
     },
 });
-

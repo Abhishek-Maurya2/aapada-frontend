@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Avatar, Text, Button, List, Switch, Divider, Surface, useTheme } from 'react-native-paper';
+import {
+    Avatar, Text, Button, List, Switch, Divider, Surface, Icon, useTheme,
+} from 'react-native-paper';
 import { colors, spacing } from '../theme/colors';
 import useStore from '../store/useStore';
 
 export default function ProfileScreen({ navigation }) {
     const { user, logout } = useStore();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const theme = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -21,68 +22,95 @@ export default function ProfileScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Header */}
             <View style={styles.header}>
                 <Button
                     icon="arrow-left"
                     mode="text"
                     onPress={() => navigation.goBack()}
-                    textColor={theme.colors.primary}
+                    textColor={colors.primary}
                 >
                     Back
                 </Button>
-                <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>Profile</Text>
+                <Text variant="titleMedium" style={{ fontWeight: '700', color: colors.onSurface }}>
+                    Profile
+                </Text>
                 <View style={{ width: 60 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.profileHeader}>
+                {/* Profile Card */}
+                <Surface style={styles.profileCard} elevation={0}>
                     <Avatar.Text
-                        size={100}
+                        size={96}
                         label={getInitials(user?.name)}
-                        style={{ backgroundColor: theme.colors.primary, marginBottom: spacing.m }}
+                        style={{ backgroundColor: colors.primaryContainer }}
+                        labelStyle={{ color: colors.onPrimaryContainer, fontWeight: '700' }}
                     />
-                    <Text variant="headlineMedium" style={{ fontWeight: 'bold', color: theme.colors.onBackground }}>{user?.name || 'User'}</Text>
-                    <Text variant="bodyLarge" style={{ color: theme.colors.outline }}>{user?.email || 'user@example.com'}</Text>
-                </View>
+                    <Text variant="headlineMedium" style={styles.userName}>
+                        {user?.name || 'User'}
+                    </Text>
+                    <Text variant="bodyLarge" style={{ color: colors.onSurfaceVariant }}>
+                        {user?.email || 'user@example.com'}
+                    </Text>
+                </Surface>
 
-                <Surface style={[styles.infoSection, { backgroundColor: theme.colors.surface }]} elevation={1}>
+                {/* Account Info */}
+                <Surface style={styles.section} elevation={0}>
                     <List.Section>
-                        <List.Subheader>Account Information</List.Subheader>
+                        <List.Subheader style={styles.subheader}>
+                            Account Information
+                        </List.Subheader>
                         <List.Item
                             title="Device ID"
+                            titleStyle={{ color: colors.onSurface }}
                             description={user?.id || 'Not registered'}
-                            left={props => <List.Icon {...props} icon="cellphone" />}
+                            descriptionStyle={{ color: colors.onSurfaceVariant }}
+                            left={props => <List.Icon {...props} icon="cellphone" color={colors.primary} />}
                         />
-                        <Divider />
+                        <Divider style={{ backgroundColor: colors.outlineVariant }} />
                         <List.Item
                             title="Status"
+                            titleStyle={{ color: colors.onSurface }}
                             description="Active"
+                            descriptionStyle={{ color: colors.success }}
                             left={props => <List.Icon {...props} icon="check-circle" color={colors.success} />}
                             right={() => <View style={styles.statusDot} />}
                         />
                     </List.Section>
                 </Surface>
 
-                <Surface style={[styles.infoSection, { backgroundColor: theme.colors.surface }]} elevation={1}>
+                {/* Settings */}
+                <Surface style={styles.section} elevation={0}>
                     <List.Section>
-                        <List.Subheader>Settings</List.Subheader>
+                        <List.Subheader style={styles.subheader}>Settings</List.Subheader>
                         <List.Item
                             title="Notifications"
+                            titleStyle={{ color: colors.onSurface }}
                             description="Receive disaster alerts"
-                            left={props => <List.Icon {...props} icon="bell" />}
-                            right={() => <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} />}
+                            descriptionStyle={{ color: colors.onSurfaceVariant }}
+                            left={props => <List.Icon {...props} icon="bell-outline" color={colors.primary} />}
+                            right={() => (
+                                <Switch
+                                    value={notificationsEnabled}
+                                    onValueChange={setNotificationsEnabled}
+                                    color={colors.primary}
+                                />
+                            )}
                         />
                     </List.Section>
                 </Surface>
 
+                {/* Logout */}
                 <View style={styles.actions}>
                     <Button
-                        mode="contained"
+                        mode="outlined"
                         onPress={handleLogout}
-                        buttonColor={colors.error}
+                        textColor={colors.error}
                         icon="logout"
                         style={styles.logoutButton}
+                        contentStyle={{ paddingVertical: 4 }}
                     >
                         Logout
                     </Button>
@@ -95,6 +123,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -106,14 +135,28 @@ const styles = StyleSheet.create({
     content: {
         padding: spacing.l,
     },
-    profileHeader: {
+    profileCard: {
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 28,
+        padding: spacing.xl,
         alignItems: 'center',
-        marginBottom: spacing.xl,
-    },
-    infoSection: {
-        borderRadius: 12,
         marginBottom: spacing.l,
+    },
+    userName: {
+        fontWeight: '800',
+        color: colors.onSurface,
+        marginTop: spacing.m,
+        marginBottom: 4,
+    },
+    section: {
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 20,
+        marginBottom: spacing.m,
         overflow: 'hidden',
+    },
+    subheader: {
+        color: colors.primary,
+        fontWeight: '700',
     },
     statusDot: {
         width: 10,
@@ -124,11 +167,10 @@ const styles = StyleSheet.create({
         marginRight: spacing.m,
     },
     actions: {
-        marginTop: spacing.l,
+        marginTop: spacing.m,
     },
     logoutButton: {
-        borderRadius: 8,
-        paddingVertical: 4,
+        borderRadius: 20,
+        borderColor: colors.error,
     },
 });
-

@@ -1,72 +1,106 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Button, Chip, Divider, Surface, useTheme } from 'react-native-paper';
+import { Text, Button, Chip, Surface, Icon, useTheme } from 'react-native-paper';
 import { colors, spacing } from '../theme/colors';
 
-const getSeverityColor = (severity) => {
-    switch (severity?.toLowerCase()) {
-        case 'critical': return colors.error;
-        case 'high': return colors.accent;
-        case 'medium': return '#F59E0B';
-        default: return colors.success;
+const getSeverityConfig = (severity) => {
+    switch (severity?.toUpperCase()) {
+        case 'CRITICAL':
+            return { bg: '#F9DEDC', color: '#B3261E', label: 'CRITICAL' };
+        case 'HIGH':
+            return { bg: '#FFDBCF', color: '#C4441C', label: 'HIGH' };
+        case 'MEDIUM':
+            return { bg: '#FFDEA9', color: '#795900', label: 'MEDIUM' };
+        default:
+            return { bg: '#C4EECD', color: '#006D3A', label: 'LOW' };
     }
 };
 
 export default function AlertDetailScreen({ route, navigation }) {
     const { alert } = route.params;
-    const theme = useTheme();
+    const sev = getSeverityConfig(alert.severity);
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
+        <SafeAreaView style={styles.container} edges={['bottom']}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Surface style={styles.headerImagePlaceholder} elevation={2}>
-                    {/* Placeholder for Map or Impact Image */}
-                    <Chip
-                        style={{ backgroundColor: getSeverityColor(alert.severity), alignSelf: 'flex-start' }}
-                        textStyle={{ color: '#fff', fontWeight: 'bold' }}
-                    >
-                        {alert.severity.toUpperCase()}
-                    </Chip>
-                </Surface>
-
-                <Surface style={[styles.detailsContainer, { backgroundColor: theme.colors.background }]} elevation={0}>
-                    <Text variant="headlineMedium" style={styles.title}>{alert.title}</Text>
-
-                    <View style={styles.metaRow}>
-                        <View style={styles.metaItem}>
-                            <Text variant="labelMedium" style={{ color: theme.colors.secondary }}>Location</Text>
-                            <Text variant="bodyLarge" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>{alert.location}</Text>
-                        </View>
-                        <Divider style={{ width: 1, height: '100%', backgroundColor: theme.colors.outline }} />
-                        <View style={styles.metaItem}>
-                            <Text variant="labelMedium" style={{ color: theme.colors.secondary }}>Time</Text>
-                            <Text variant="bodyLarge" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>{alert.time}</Text>
-                        </View>
-                    </View>
-
-                    <Divider style={{ marginVertical: spacing.m }} />
-
-                    <View style={styles.section}>
-                        <Text variant="titleLarge" style={styles.sectionTitle}>Description</Text>
-                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>{alert.description}</Text>
-                    </View>
-
-                    <View style={styles.section}>
-                        <Text variant="titleLarge" style={styles.sectionTitle}>Instructions</Text>
-                        <Text variant="bodyMedium" style={styles.instructionItem}>• Stay indoors and away from windows.</Text>
-                        <Text variant="bodyMedium" style={styles.instructionItem}>• Keep emergency kits ready.</Text>
-                        <Text variant="bodyMedium" style={styles.instructionItem}>• Listen to official broadcasts only.</Text>
+                {/* Hero Banner */}
+                <Surface style={[styles.heroBanner, { backgroundColor: sev.bg }]} elevation={0}>
+                    <View style={styles.heroContent}>
+                        <Chip
+                            style={{ backgroundColor: sev.color, alignSelf: 'flex-start' }}
+                            textStyle={{ color: '#fff', fontWeight: '700' }}
+                        >
+                            {sev.label}
+                        </Chip>
+                        <Text variant="headlineMedium" style={[styles.heroTitle, { color: sev.color }]}>
+                            {alert.title}
+                        </Text>
                     </View>
                 </Surface>
+
+                {/* Details */}
+                <View style={styles.details}>
+                    {/* Info Row */}
+                    <View style={styles.infoRow}>
+                        <Surface style={styles.infoCard} elevation={0}>
+                            <Icon source="map-marker" size={22} color={colors.primary} />
+                            <Text variant="labelMedium" style={styles.infoLabel}>Location</Text>
+                            <Text variant="titleSmall" style={styles.infoValue}>
+                                {alert.location || 'All Areas'}
+                            </Text>
+                        </Surface>
+                        <Surface style={styles.infoCard} elevation={0}>
+                            <Icon source="clock-outline" size={22} color={colors.primary} />
+                            <Text variant="labelMedium" style={styles.infoLabel}>Time</Text>
+                            <Text variant="titleSmall" style={styles.infoValue}>
+                                {alert.time}
+                            </Text>
+                        </Surface>
+                    </View>
+
+                    {/* Description */}
+                    <Surface style={styles.section} elevation={0}>
+                        <Text variant="titleMedium" style={styles.sectionTitle}>Description</Text>
+                        <Text variant="bodyLarge" style={styles.sectionBody}>
+                            {alert.description}
+                        </Text>
+                    </Surface>
+
+                    {/* Instructions */}
+                    <Surface style={styles.section} elevation={0}>
+                        <Text variant="titleMedium" style={styles.sectionTitle}>Safety Instructions</Text>
+                        <View style={styles.instructionRow}>
+                            <Icon source="shield-check" size={20} color={colors.primary} />
+                            <Text variant="bodyMedium" style={styles.instructionText}>
+                                Stay indoors and away from windows.
+                            </Text>
+                        </View>
+                        <View style={styles.instructionRow}>
+                            <Icon source="bag-personal" size={20} color={colors.primary} />
+                            <Text variant="bodyMedium" style={styles.instructionText}>
+                                Keep emergency kits ready.
+                            </Text>
+                        </View>
+                        <View style={styles.instructionRow}>
+                            <Icon source="radio" size={20} color={colors.primary} />
+                            <Text variant="bodyMedium" style={styles.instructionText}>
+                                Listen to official broadcasts only.
+                            </Text>
+                        </View>
+                    </Surface>
+                </View>
             </ScrollView>
 
-            <View style={[styles.footer, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.outline }]}>
+            {/* Footer */}
+            <View style={styles.footer}>
                 <Button
                     mode="contained"
                     onPress={() => navigation.goBack()}
                     buttonColor={colors.success}
                     contentStyle={{ paddingVertical: 8 }}
+                    style={{ borderRadius: 20 }}
+                    labelStyle={{ fontSize: 16, fontWeight: '700' }}
                 >
                     I am Safe / Acknowledge
                 </Button>
@@ -78,51 +112,71 @@ export default function AlertDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
     },
     scrollContent: {
         paddingBottom: 100,
     },
-    headerImagePlaceholder: {
-        height: 250,
-        justifyContent: 'flex-end',
-        alignItems: 'flex-start',
-        padding: spacing.l,
-        backgroundColor: colors.surfaceHighlight, // Still use this for placeholder bg
+    heroBanner: {
+        paddingTop: 60,
+        paddingBottom: 32,
+        paddingHorizontal: spacing.l,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
     },
-    detailsContainer: {
-        flex: 1,
-        marginTop: -20,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: spacing.l,
-        paddingTop: spacing.xl,
+    heroContent: {
+        gap: 12,
     },
-    title: {
-        fontWeight: 'bold',
+    heroTitle: {
+        fontWeight: '800',
+    },
+    details: {
+        padding: spacing.l,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        gap: 12,
         marginBottom: spacing.l,
     },
-    metaRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: spacing.m,
-        padding: spacing.m,
-        borderRadius: 12,
-        backgroundColor: colors.surface, // Keep consistent background for meta box
-    },
-    metaItem: {
+    infoCard: {
         flex: 1,
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 20,
+        padding: 16,
         alignItems: 'center',
+        gap: 4,
+    },
+    infoLabel: {
+        color: colors.onSurfaceVariant,
+    },
+    infoValue: {
+        fontWeight: '700',
+        color: colors.onSurface,
     },
     section: {
-        marginBottom: spacing.l,
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: spacing.m,
     },
     sectionTitle: {
-        fontWeight: 'bold',
-        marginBottom: spacing.s,
+        fontWeight: '700',
+        color: colors.onSurface,
+        marginBottom: 10,
     },
-    instructionItem: {
-        marginBottom: spacing.xs,
-        color: colors.textSecondary,
+    sectionBody: {
+        color: colors.onSurfaceVariant,
+        lineHeight: 24,
+    },
+    instructionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 10,
+    },
+    instructionText: {
+        color: colors.onSurfaceVariant,
+        flex: 1,
     },
     footer: {
         position: 'absolute',
@@ -130,7 +184,8 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         padding: spacing.l,
+        backgroundColor: colors.background,
         borderTopWidth: 1,
+        borderTopColor: colors.outlineVariant,
     },
 });
-

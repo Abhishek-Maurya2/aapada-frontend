@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button, Text, Surface } from 'react-native-paper';
-import { colors, spacing, typography } from '../theme/colors';
+import { TextInput, Button, Text, Surface, Icon } from 'react-native-paper';
+import { colors, spacing } from '../theme/colors';
 import useStore from '../store/useStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -16,7 +15,6 @@ export default function LoginScreen({ navigation }) {
 
     const handleLogin = async () => {
         if (!email || !password) return;
-
         const success = await login(email, password);
         if (success) {
             navigation.replace('Home');
@@ -24,122 +22,168 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <LinearGradient
-            colors={[colors.background, '#1E293B']}
-            style={styles.container}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-        >
-            <SafeAreaView style={styles.safeArea}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.content}
-                >
-                    <View style={styles.header}>
-                        <Text variant="displayMedium" style={styles.title}>Aapada</Text>
-                        <Text variant="headlineSmall" style={styles.subtitle}>Disaster Alert System</Text>
-                    </View>
-
-                    <Surface style={styles.form} elevation={4}>
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                mode="outlined"
-                                label="Email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                left={<TextInput.Icon icon="email" />}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                mode="outlined"
-                                label="Password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
-                                left={<TextInput.Icon icon="lock" />}
-                                right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
-                            />
-                        </View>
-
-                        {error && (
-                            <Text style={{ color: colors.error, marginBottom: spacing.m, textAlign: 'center' }}>
-                                {error}
-                            </Text>
-                        )}
-
-                        <Button
-                            mode="contained"
-                            onPress={handleLogin}
-                            loading={loading}
-                            disabled={loading}
-                            style={styles.button}
-                            contentStyle={styles.buttonContent}
-                        >
-                            Login
-                        </Button>
-
-                        <View style={styles.footer}>
-                            <Text style={styles.footerText}>Don't have an account? </Text>
-                            <Button
-                                mode="text"
-                                onPress={() => navigation.navigate('Signup')}
-                                compact
-                            >
-                                Sign Up
-                            </Button>
-                        </View>
+        <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.content}
+            >
+                {/* Branding */}
+                <View style={styles.brandArea}>
+                    <Surface style={styles.iconCircle} elevation={2}>
+                        <Icon source="shield-alert" size={48} color={colors.primary} />
                     </Surface>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        </LinearGradient>
+                    <Text variant="displaySmall" style={styles.appName}>Aapada</Text>
+                    <Text variant="titleMedium" style={styles.tagline}>
+                        Disaster Alert System
+                    </Text>
+                </View>
+
+                {/* Form Card */}
+                <Surface style={styles.formCard} elevation={1}>
+                    <Text variant="headlineSmall" style={styles.formTitle}>Welcome Back</Text>
+
+                    <TextInput
+                        mode="outlined"
+                        label="Email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        left={<TextInput.Icon icon="email-outline" />}
+                        style={styles.input}
+                        outlineStyle={styles.inputOutline}
+                    />
+
+                    <TextInput
+                        mode="outlined"
+                        label="Password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        left={<TextInput.Icon icon="lock-outline" />}
+                        right={
+                            <TextInput.Icon
+                                icon={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                onPress={() => setShowPassword(!showPassword)}
+                            />
+                        }
+                        style={styles.input}
+                        outlineStyle={styles.inputOutline}
+                    />
+
+                    {error && (
+                        <Surface style={styles.errorBanner} elevation={0}>
+                            <Icon source="alert-circle" size={18} color={colors.error} />
+                            <Text variant="bodySmall" style={styles.errorText}>{error}</Text>
+                        </Surface>
+                    )}
+
+                    <Button
+                        mode="contained"
+                        onPress={handleLogin}
+                        loading={loading}
+                        disabled={loading}
+                        style={styles.loginButton}
+                        contentStyle={styles.loginButtonContent}
+                        labelStyle={styles.loginButtonLabel}
+                    >
+                        Login
+                    </Button>
+
+                    <View style={styles.footer}>
+                        <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+                            Don't have an account?
+                        </Text>
+                        <Button
+                            mode="text"
+                            onPress={() => navigation.navigate('Signup')}
+                            compact
+                            labelStyle={{ fontWeight: '600' }}
+                        >
+                            Sign Up
+                        </Button>
+                    </View>
+                </Surface>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-        justifyContent: 'center',
+        backgroundColor: colors.background,
     },
     content: {
+        flex: 1,
         padding: spacing.l,
         justifyContent: 'center',
     },
-    header: {
+    brandArea: {
         alignItems: 'center',
-        marginBottom: spacing.xl * 2,
+        marginBottom: 40,
     },
-    title: {
-        color: colors.primary,
-        fontWeight: 'bold',
-        marginBottom: spacing.s,
-        letterSpacing: 1,
-    },
-    subtitle: {
-        color: colors.textSecondary,
-    },
-    form: {
-        backgroundColor: colors.surface,
-        borderRadius: 20,
-        padding: spacing.l,
-    },
-    inputContainer: {
+    iconCircle: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: spacing.m,
     },
-    button: {
-        marginTop: spacing.s,
-        borderRadius: 8,
+    appName: {
+        fontWeight: '800',
+        color: colors.primary,
+        letterSpacing: 1,
     },
-    buttonContent: {
+    tagline: {
+        color: colors.onSurfaceVariant,
+        marginTop: 4,
+    },
+    formCard: {
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 28,
+        padding: spacing.l,
+    },
+    formTitle: {
+        fontWeight: '700',
+        color: colors.onSurface,
+        marginBottom: spacing.l,
+        textAlign: 'center',
+    },
+    input: {
+        marginBottom: spacing.m,
+        backgroundColor: colors.surface,
+    },
+    inputOutline: {
+        borderRadius: 16,
+    },
+    errorBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: colors.errorContainer,
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: spacing.m,
+    },
+    errorText: {
+        color: colors.onErrorContainer,
+        flex: 1,
+    },
+    loginButton: {
+        borderRadius: 20,
+        marginTop: spacing.s,
+    },
+    loginButtonContent: {
         paddingVertical: 6,
+    },
+    loginButtonLabel: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     footer: {
         flexDirection: 'row',
@@ -147,9 +191,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: spacing.l,
     },
-    footerText: {
-        color: colors.textSecondary,
-    },
 });
-
-

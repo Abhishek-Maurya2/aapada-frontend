@@ -1,16 +1,60 @@
+// M3 Expressive Light Theme - Color Tokens
 export const colors = {
-    background: '#0F172A', // Slate 900
-    surface: '#1E293B',    // Slate 800
-    surfaceHighlight: '#334155', // Slate 700
-    primary: '#3B82F6',    // Blue 500
-    secondary: '#6366F1',  // Indigo 500
-    accent: '#F43F5E',     // Rose 500 (Alerts)
-    success: '#10B981',    // Emerald 500
-    text: '#F8FAFC',       // Slate 50
-    textSecondary: '#94A3B8', // Slate 400
-    border: '#334155',
-    error: '#EF4444',
-    overlay: 'rgba(15, 23, 42, 0.8)',
+    // Primary
+    primary: '#6750A4',
+    onPrimary: '#FFFFFF',
+    primaryContainer: '#EADDFF',
+    onPrimaryContainer: '#21005E',
+
+    // Secondary  
+    secondary: '#625B71',
+    onSecondary: '#FFFFFF',
+    secondaryContainer: '#E8DEF8',
+    onSecondaryContainer: '#1D192B',
+
+    // Tertiary
+    tertiary: '#7D5260',
+    onTertiary: '#FFFFFF',
+    tertiaryContainer: '#FFD8E4',
+    onTertiaryContainer: '#31111D',
+
+    // Error
+    error: '#B3261E',
+    onError: '#FFFFFF',
+    errorContainer: '#F9DEDC',
+    onErrorContainer: '#410E0B',
+
+    // Surfaces
+    background: '#FFFBFE',
+    onBackground: '#1C1B1F',
+    surface: '#FFFBFE',
+    onSurface: '#1C1B1F',
+    surfaceVariant: '#E7E0EC',
+    onSurfaceVariant: '#49454F',
+    surfaceContainerLowest: '#FFFFFF',
+    surfaceContainerLow: '#F7F2FA',
+    surfaceContainer: '#F3EDF7',
+    surfaceContainerHigh: '#ECE6F0',
+    surfaceContainerHighest: '#E6E0E9',
+
+    // Others
+    outline: '#79747E',
+    outlineVariant: '#CAC4D0',
+    inverseSurface: '#313033',
+    inverseOnSurface: '#F4EFF4',
+    inversePrimary: '#D0BCFF',
+
+    // Semantic
+    success: '#006D3A',
+    successContainer: '#98F7BB',
+    warning: '#795900',
+    warningContainer: '#FFDEA9',
+    accent: '#BA1A1A',
+
+    // Legacy aliases
+    text: '#1C1B1F',
+    textSecondary: '#49454F',
+    border: '#CAC4D0',
 };
 
 export const spacing = {
@@ -23,10 +67,10 @@ export const spacing = {
 };
 
 export const typography = {
-    h1: { fontSize: 32, fontWeight: '700', color: colors.text },
-    h2: { fontSize: 24, fontWeight: '700', color: colors.text },
-    h3: { fontSize: 20, fontWeight: '600', color: colors.text },
-    body: { fontSize: 16, color: colors.textSecondary },
-    caption: { fontSize: 14, color: colors.textSecondary },
+    h1: { fontSize: 32, fontWeight: '700', color: '#1C1B1F' },
+    h2: { fontSize: 24, fontWeight: '700', color: '#1C1B1F' },
+    h3: { fontSize: 20, fontWeight: '600', color: '#1C1B1F' },
+    body: { fontSize: 16, color: '#49454F' },
+    caption: { fontSize: 14, color: '#49454F' },
     button: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
 };

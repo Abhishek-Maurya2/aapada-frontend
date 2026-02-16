@@ -1,30 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Text, Button, Chip, Avatar, IconButton, ActivityIndicator, Snackbar, Divider, useTheme } from 'react-native-paper';
+import {
+    Card, Text, Button, Chip, Avatar, IconButton,
+    Snackbar, Divider, Surface, Icon, useTheme,
+} from 'react-native-paper';
 import { colors, spacing } from '../theme/colors';
 import useStore from '../store/useStore';
 
-const getSeverityColor = (severity) => {
+const getSeverityConfig = (severity) => {
     switch (severity?.toUpperCase()) {
-        case 'CRITICAL': return colors.error;
-        case 'HIGH': return colors.accent;
-        case 'MEDIUM': return '#F59E0B';
-        default: return colors.success;
+        case 'CRITICAL':
+            return { bg: '#F9DEDC', text: '#410E0B', badge: '#B3261E', badgeText: '#fff' };
+        case 'HIGH':
+            return { bg: '#FFDBCF', text: '#380D00', badge: '#C4441C', badgeText: '#fff' };
+        case 'MEDIUM':
+            return { bg: '#FFDEA9', text: '#261A00', badge: '#795900', badgeText: '#fff' };
+        default:
+            return { bg: '#C4EECD', text: '#002110', badge: '#006D3A', badgeText: '#fff' };
     }
 };
 
 const AlertCard = ({ alert, onPress, onAction }) => {
-    const theme = useTheme();
+    const sev = getSeverityConfig(alert.severity);
 
     return (
-        <Card style={styles.card} onPress={() => onPress(alert)} mode="elevated">
+        <Card
+            style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}
+            onPress={() => onPress(alert)}
+            mode="elevated"
+        >
             <Card.Content>
                 <View style={styles.cardHeader}>
                     <Text variant="titleLarge" style={styles.cardTitle}>{alert.title}</Text>
                     <Chip
-                        style={{ backgroundColor: getSeverityColor(alert.severity) }}
-                        textStyle={{ color: '#fff', fontWeight: 'bold' }}
+                        style={{ backgroundColor: sev.badge }}
+                        textStyle={{ color: sev.badgeText, fontWeight: '700', fontSize: 11 }}
                         compact
                     >
                         {alert.severity}
@@ -32,8 +43,8 @@ const AlertCard = ({ alert, onPress, onAction }) => {
                 </View>
 
                 <View style={styles.locationRow}>
-                    <IconButton icon="map-marker" size={16} iconColor={theme.colors.primary} style={{ margin: 0 }} />
-                    <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
+                    <Icon source="map-marker" size={16} color={colors.primary} />
+                    <Text variant="bodyMedium" style={{ color: colors.primary, marginLeft: 4 }}>
                         {alert.location || 'All Areas'}
                     </Text>
                 </View>
@@ -42,7 +53,10 @@ const AlertCard = ({ alert, onPress, onAction }) => {
                     {alert.description}
                 </Text>
 
-                <Text variant="labelSmall" style={styles.cardTime}>Received: {alert.time}</Text>
+                <View style={styles.timeRow}>
+                    <Icon source="clock-outline" size={14} color={colors.outline} />
+                    <Text variant="labelSmall" style={styles.cardTime}>Received: {alert.time}</Text>
+                </View>
             </Card.Content>
 
             <Card.Actions style={styles.cardActions}>
@@ -50,7 +64,7 @@ const AlertCard = ({ alert, onPress, onAction }) => {
                     mode="outlined"
                     icon="hospital-box"
                     textColor={colors.error}
-                    style={{ borderColor: colors.error }}
+                    style={{ borderColor: colors.error, borderRadius: 20 }}
                     onPress={() => onAction(alert.id, 'MEDICAL')}
                     compact
                 >
@@ -58,9 +72,9 @@ const AlertCard = ({ alert, onPress, onAction }) => {
                 </Button>
                 <Button
                     mode="outlined"
-                    icon="fire-truck"
-                    textColor='#F59E0B'
-                    style={{ borderColor: '#F59E0B' }}
+                    icon="fire"
+                    textColor="#795900"
+                    style={{ borderColor: '#795900', borderRadius: 20 }}
                     onPress={() => onAction(alert.id, 'FIRE')}
                     compact
                 >
@@ -71,6 +85,7 @@ const AlertCard = ({ alert, onPress, onAction }) => {
                     icon="check-circle"
                     buttonColor={colors.success}
                     onPress={() => onAction(alert.id, 'SAFE')}
+                    style={{ borderRadius: 20 }}
                     compact
                 >
                     I'm Safe
@@ -86,15 +101,10 @@ export default function HomeScreen({ navigation }) {
     const theme = useTheme();
 
     useEffect(() => {
-        // Fetch immediately on mount (with loading indicator)
         fetchAlerts();
-
-        // Poll for new alerts every 5 seconds SILENTLY (no loading indicator)
         const pollInterval = setInterval(() => {
-            fetchAlerts(true); // true = silent mode, no UI refresh
+            fetchAlerts(true);
         }, 5000);
-
-        // Cleanup on unmount
         return () => clearInterval(pollInterval);
     }, []);
 
@@ -103,9 +113,7 @@ export default function HomeScreen({ navigation }) {
     };
 
     const handleAction = async (alertId, actionType) => {
-        // Stop the alarm when user responds
         dismissAlarm();
-
         const success = await sendFeedback(alertId, actionType);
         if (success) {
             setFeedbackSent(actionType);
@@ -118,40 +126,49 @@ export default function HomeScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
-            {/* Header with Profile */}
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text variant="labelLarge" style={{ color: theme.colors.primary }}>Hello, {user?.name || 'User'} 👋</Text>
-                    <Text variant="headlineMedium" style={{ fontWeight: 'bold' }}>Active Alerts</Text>
+                    <Text variant="labelLarge" style={{ color: colors.primary }}>
+                        Hello, {user?.name || 'User'} 👋
+                    </Text>
+                    <Text variant="headlineMedium" style={{ fontWeight: '800', color: colors.onSurface }}>
+                        Active Alerts
+                    </Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                    <Avatar.Text size={48} label={getInitials(user?.name)} style={{ backgroundColor: theme.colors.primary }} />
-                </TouchableOpacity>
+                <Pressable onPress={() => navigation.navigate('Profile')}>
+                    <Avatar.Text
+                        size={48}
+                        label={getInitials(user?.name)}
+                        style={{ backgroundColor: colors.primaryContainer }}
+                        labelStyle={{ color: colors.onPrimaryContainer }}
+                    />
+                </Pressable>
             </View>
 
             {/* Stats Bar */}
-            <View style={[styles.statsBar, { borderColor: theme.colors.outline }]}>
+            <Surface style={styles.statsBar} elevation={0}>
                 <View style={styles.statItem}>
-                    <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>{alerts.length}</Text>
-                    <Text variant="labelMedium" style={{ color: theme.colors.secondary }}>Active</Text>
+                    <Text variant="headlineSmall" style={{ fontWeight: '800', color: colors.primary }}>
+                        {alerts.length}
+                    </Text>
+                    <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>Active</Text>
                 </View>
-                <Divider style={{ width: 1, height: '100%', backgroundColor: theme.colors.outline }} />
-                <TouchableOpacity style={styles.statItem} onPress={() => navigation.navigate('AlertHistory')}>
-                    <IconButton icon="clipboard-text-clock" size={24} />
-                    <Text variant="labelMedium" style={{ color: theme.colors.secondary, marginTop: -10 }}>History</Text>
-                </TouchableOpacity>
-            </View>
+                <Divider style={styles.statDivider} />
+                <Pressable style={styles.statItem} onPress={() => navigation.navigate('AlertHistory')}>
+                    <Icon source="clipboard-text-clock" size={24} color={colors.tertiary} />
+                    <Text variant="labelMedium" style={{ color: colors.tertiary, marginTop: 2 }}>
+                        History
+                    </Text>
+                </Pressable>
+            </Surface>
 
             {/* Alert List */}
             <FlatList
                 data={alerts}
                 renderItem={({ item }) => (
-                    <AlertCard
-                        alert={item}
-                        onPress={handleAlertPress}
-                        onAction={handleAction}
-                    />
+                    <AlertCard alert={item} onPress={handleAlertPress} onAction={handleAction} />
                 )}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
@@ -159,41 +176,43 @@ export default function HomeScreen({ navigation }) {
                     <RefreshControl
                         refreshing={loading}
                         onRefresh={fetchAlerts}
-                        tintColor={theme.colors.primary}
-                        colors={[theme.colors.primary]}
+                        colors={[colors.primary]}
                     />
                 }
                 ListEmptyComponent={
                     !loading && (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyEmoji}>🎉</Text>
-                            <Text variant="headlineSmall" style={{ marginBottom: 8 }}>All Clear!</Text>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.secondary }}>No active alerts in your area. Stay safe!</Text>
+                            <Surface style={styles.emptyIcon} elevation={0}>
+                                <Icon source="check-decagram" size={48} color={colors.success} />
+                            </Surface>
+                            <Text variant="headlineSmall" style={styles.emptyTitle}>All Clear!</Text>
+                            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}>
+                                No active alerts in your area. Stay safe!
+                            </Text>
                         </View>
                     )
                 }
             />
 
-            {/* Feedback Toast */}
+            {/* Feedback Snackbar */}
             <Snackbar
                 visible={!!feedbackSent}
                 onDismiss={() => setFeedbackSent(null)}
                 duration={3000}
-                style={{ backgroundColor: colors.success }}
+                style={{ backgroundColor: colors.inverseSurface }}
             >
-                <Text style={{ color: '#fff' }}>Response sent: {feedbackSent}</Text>
+                <Text style={{ color: colors.inverseOnSurface }}>
+                    Response sent: {feedbackSent}
+                </Text>
             </Snackbar>
         </SafeAreaView>
     );
 }
 
-// Need to keep TouchableOpacity for custom composed buttons that aren't fully Paper friendly in layout yet
-// But I replaced most with Paper equivalents.
-import { TouchableOpacity } from 'react-native';
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -204,19 +223,23 @@ const styles = StyleSheet.create({
     },
     statsBar: {
         flexDirection: 'row',
-        backgroundColor: colors.surface,
+        backgroundColor: colors.surfaceContainerLow,
         marginHorizontal: spacing.l,
         marginBottom: spacing.m,
-        borderRadius: 12,
+        borderRadius: 20,
         padding: spacing.m,
-        borderWidth: 1,
         justifyContent: 'space-around',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     statItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    statDivider: {
+        width: 1,
+        height: 40,
+        backgroundColor: colors.outlineVariant,
     },
     listContent: {
         padding: spacing.l,
@@ -224,7 +247,7 @@ const styles = StyleSheet.create({
     },
     card: {
         marginBottom: spacing.m,
-        backgroundColor: colors.surface,
+        borderRadius: 20,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -234,22 +257,26 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         flex: 1,
-        fontWeight: 'bold',
+        fontWeight: '700',
+        color: colors.onSurface,
         marginRight: spacing.s,
     },
     locationRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginLeft: -10, // Offset icon padding
         marginBottom: spacing.xs,
     },
     cardDescription: {
-        color: colors.textSecondary,
+        color: colors.onSurfaceVariant,
         marginBottom: spacing.s,
     },
+    timeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
     cardTime: {
-        color: colors.textSecondary,
-        marginTop: spacing.xs,
+        color: colors.outline,
     },
     cardActions: {
         justifyContent: 'space-between',
@@ -260,9 +287,18 @@ const styles = StyleSheet.create({
         padding: spacing.xl * 2,
         alignItems: 'center',
     },
-    emptyEmoji: {
-        fontSize: 64,
+    emptyIcon: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: colors.successContainer || '#C4EECD',
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: spacing.m,
     },
+    emptyTitle: {
+        fontWeight: '700',
+        color: colors.onSurface,
+        marginBottom: spacing.s,
+    },
 });
-

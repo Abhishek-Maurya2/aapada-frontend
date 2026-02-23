@@ -1,3 +1,4 @@
+import './src/i18n/i18n';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
@@ -18,6 +19,7 @@ import AlertDetailScreen from './src/screens/AlertDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AlertHistoryScreen from './src/screens/AlertHistoryScreen';
 import EmergencyAlertScreen from './src/screens/EmergencyAlertScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import useStore from './src/store/useStore';
 
 const Stack = createNativeStackNavigator();
@@ -28,10 +30,10 @@ const MyTheme = {
     ...DefaultTheme.colors,
     primary: colors.primary,
     background: colors.background,
-    card: colors.surfaceContainerLow,
-    text: colors.onSurface,
-    border: colors.outlineVariant,
-    notification: colors.error,
+    card: colors.card,
+    text: colors.foreground,
+    border: colors.border,
+    notification: colors.destructive,
   },
 };
 
@@ -152,6 +154,11 @@ export default function App() {
                 presentation: 'fullScreenModal',
                 gestureEnabled: false,
               }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ headerShown: false }}
             />
           </Stack.Navigator>
         </NavigationContainer>

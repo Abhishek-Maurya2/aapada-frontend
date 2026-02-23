@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button, Text, Surface, Icon } from 'react-native-paper';
-import { colors, spacing } from '../theme/colors';
+import {
+    View, StyleSheet, KeyboardAvoidingView, Platform,
+    ScrollView, TextInput as RNTextInput, TouchableOpacity,
+} from 'react-native';
+import { Text, Icon } from 'react-native-paper';
+import { colors, spacing, borderRadius } from '../theme/colors';
 import useStore from '../store/useStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function SignupScreen({ navigation }) {
+    const { t } = useTranslation();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,96 +31,110 @@ export default function SignupScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.content}
+                style={{ flex: 1 }}
             >
-                {/* Header */}
-                <View style={styles.headerArea}>
-                    <Surface style={styles.iconCircle} elevation={2}>
-                        <Icon source="account-plus" size={44} color={colors.primary} />
-                    </Surface>
-                    <Text variant="headlineLarge" style={styles.title}>Create Account</Text>
-                    <Text variant="titleMedium" style={styles.subtitle}>
-                        Join the Aapada Network
-                    </Text>
-                </View>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.content}>
+                        {/* Header with avatar */}
+                        <View style={styles.headerArea}>
+                            <View style={styles.avatarCircle}>
+                                <Icon source="account" size={40} color={colors.primary} />
+                            </View>
+                            <Text style={styles.title}>{t('signup.title')}</Text>
+                            <Text style={styles.subtitle}>{t('signup.subtitle')}</Text>
+                        </View>
 
-                {/* Form Card */}
-                <Surface style={styles.formCard} elevation={1}>
-                    <TextInput
-                        mode="outlined"
-                        label="Full Name"
-                        placeholder="Enter your name"
-                        value={name}
-                        onChangeText={setName}
-                        left={<TextInput.Icon icon="account-outline" />}
-                        style={styles.input}
-                        outlineStyle={styles.inputOutline}
-                    />
+                        {/* Form */}
+                        <View style={styles.formSection}>
+                            {/* Name */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>{t('common.name')}</Text>
+                                <View style={styles.inputRow}>
+                                    <Icon source="account-outline" size={18} color={colors.primary} />
+                                    <RNTextInput
+                                        value={name}
+                                        onChangeText={setName}
+                                        placeholder={t('signup.namePlaceholder')}
+                                        placeholderTextColor={colors.mutedForeground}
+                                        style={styles.inputText}
+                                    />
+                                </View>
+                            </View>
 
-                    <TextInput
-                        mode="outlined"
-                        label="Email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        left={<TextInput.Icon icon="email-outline" />}
-                        style={styles.input}
-                        outlineStyle={styles.inputOutline}
-                    />
+                            {/* Email */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>{t('common.email')}</Text>
+                                <View style={styles.inputRow}>
+                                    <Icon source="email-outline" size={18} color={colors.primary} />
+                                    <RNTextInput
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        placeholder={t('signup.emailPlaceholder')}
+                                        placeholderTextColor={colors.mutedForeground}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        style={styles.inputText}
+                                    />
+                                </View>
+                            </View>
 
-                    <TextInput
-                        mode="outlined"
-                        label="Password"
-                        placeholder="Create a password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword}
-                        left={<TextInput.Icon icon="lock-outline" />}
-                        right={
-                            <TextInput.Icon
-                                icon={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                                onPress={() => setShowPassword(!showPassword)}
-                            />
-                        }
-                        style={styles.input}
-                        outlineStyle={styles.inputOutline}
-                    />
+                            {/* Password */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>{t('common.password')}</Text>
+                                <View style={styles.inputRow}>
+                                    <Icon source="lock-outline" size={18} color={colors.primary} />
+                                    <RNTextInput
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        placeholder={t('signup.passwordPlaceholder')}
+                                        placeholderTextColor={colors.mutedForeground}
+                                        secureTextEntry={!showPassword}
+                                        style={styles.inputText}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                        <Icon
+                                            source={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                            size={18}
+                                            color={colors.mutedForeground}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
 
-                    {error && (
-                        <Surface style={styles.errorBanner} elevation={0}>
-                            <Icon source="alert-circle" size={18} color={colors.error} />
-                            <Text variant="bodySmall" style={styles.errorText}>{error}</Text>
-                        </Surface>
-                    )}
+                            {error && (
+                                <View style={styles.errorBanner}>
+                                    <Icon source="alert-circle" size={16} color={colors.destructive} />
+                                    <Text style={styles.errorText}>{error}</Text>
+                                </View>
+                            )}
+                        </View>
 
-                    <Button
-                        mode="contained"
-                        onPress={handleSignup}
-                        loading={loading}
-                        disabled={loading}
-                        style={styles.signupButton}
-                        contentStyle={styles.signupButtonContent}
-                        labelStyle={styles.signupButtonLabel}
-                    >
-                        Sign Up
-                    </Button>
+                        {/* Actions */}
+                        <View style={styles.actions}>
+                            <TouchableOpacity
+                                style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
+                                onPress={handleSignup}
+                                disabled={loading}
+                                activeOpacity={0.85}
+                            >
+                                <Text style={styles.primaryBtnText}>
+                                    {loading ? t('signup.creating') : t('signup.signupBtn')}
+                                </Text>
+                            </TouchableOpacity>
 
-                    <View style={styles.footer}>
-                        <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
-                            Already have an account?
-                        </Text>
-                        <Button
-                            mode="text"
-                            onPress={() => navigation.navigate('Login')}
-                            compact
-                            labelStyle={{ fontWeight: '600' }}
-                        >
-                            Login
-                        </Button>
+                            <View style={styles.footer}>
+                                <Text style={styles.footerText}>{t('signup.hasAccount')}</Text>
+                                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                                    <Text style={styles.footerLink}>{t('common.login')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>
-                </Surface>
+                </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
@@ -128,41 +147,58 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        padding: spacing.l,
-        justifyContent: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: spacing.l,
+        paddingVertical: spacing.xl,
     },
     headerArea: {
         alignItems: 'center',
-        marginBottom: 32,
+        gap: 12,
     },
-    iconCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: colors.secondaryContainer,
-        justifyContent: 'center',
+    avatarCircle: {
+        width: 96,
+        height: 96,
+        borderRadius: 48,
+        backgroundColor: colors.accent,
         alignItems: 'center',
-        marginBottom: spacing.m,
+        justifyContent: 'center',
     },
     title: {
-        fontWeight: '800',
-        color: colors.onSurface,
+        fontSize: 24,
+        fontWeight: '900',
+        color: colors.foreground,
+        letterSpacing: -0.5,
     },
     subtitle: {
-        color: colors.onSurfaceVariant,
-        marginTop: 4,
+        fontSize: 14,
+        color: colors.mutedForeground,
+        textAlign: 'center',
     },
-    formCard: {
-        backgroundColor: colors.surfaceContainerLow,
-        borderRadius: 28,
-        padding: spacing.l,
+    formSection: {
+        marginVertical: 24,
+        gap: 16,
     },
-    input: {
-        marginBottom: spacing.m,
-        backgroundColor: colors.surface,
+    inputGroup: {
+        gap: 6,
     },
-    inputOutline: {
-        borderRadius: 16,
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colors.foreground,
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.card,
+        borderRadius: borderRadius.md,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+    },
+    inputText: {
+        flex: 1,
+        fontSize: 16,
+        color: colors.foreground,
+        marginLeft: 12,
     },
     errorBanner: {
         flexDirection: 'row',
@@ -171,27 +207,40 @@ const styles = StyleSheet.create({
         backgroundColor: colors.errorContainer,
         padding: 12,
         borderRadius: 12,
-        marginBottom: spacing.m,
     },
     errorText: {
         color: colors.onErrorContainer,
+        fontSize: 13,
         flex: 1,
     },
-    signupButton: {
-        borderRadius: 20,
-        marginTop: spacing.s,
+    actions: {
+        gap: 16,
+        paddingBottom: 16,
     },
-    signupButtonContent: {
-        paddingVertical: 6,
+    primaryBtn: {
+        backgroundColor: colors.primary,
+        borderRadius: borderRadius.full,
+        paddingVertical: 16,
+        alignItems: 'center',
     },
-    signupButtonLabel: {
+    primaryBtnText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
+        color: colors.primaryForeground,
     },
     footer: {
         flexDirection: 'row',
-        justifyContent: 'center',
         alignItems: 'center',
-        marginTop: spacing.l,
+        justifyContent: 'center',
+        gap: 4,
+    },
+    footerText: {
+        fontSize: 14,
+        color: colors.mutedForeground,
+    },
+    footerLink: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: colors.primary,
     },
 });

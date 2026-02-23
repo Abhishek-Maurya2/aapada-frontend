@@ -1,0 +1,127 @@
+{
+    "common": {
+        "login": "लॉगिन",
+        "signup": "साइन अप",
+        "logout": "लॉग आउट",
+        "email": "ईमेल",
+        "password": "पासवर्ड",
+        "name": "पूरा नाम",
+        "loading": "लोड हो रहा है...",
+        "cancel": "रद्द करें",
+        "save": "सहेजें",
+        "ok": "ठीक है",
+        "back": "वापस",
+        "viewAll": "सभी देखें",
+        "seeAll": "सभी देखें"
+    },
+    "login": {
+        "title": "आपदाओं के दौरान\nसुरक्षित रहें",
+        "subtitle": "रियल-टाइम अलर्ट, सुरक्षा मैप, और आपातकालीन संसाधन — सब एक ऐप में।",
+        "emailPlaceholder": "अपना ईमेल दर्ज करें",
+        "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
+        "loginBtn": "लॉगिन",
+        "loggingIn": "लॉगिन हो रहा है...",
+        "createAccount": "अकाउंट बनाएं",
+        "noAccount": "अकाउंट नहीं है?",
+        "pills": {
+            "liveAlerts": "लाइव अलर्ट",
+            "safetyMaps": "सुरक्षा मैप",
+            "sos": "SOS",
+            "weather": "मौसम"
+        }
+    },
+    "signup": {
+        "title": "अकाउंट बनाएं",
+        "subtitle": "आपदाओं के दौरान सुरक्षित रहने के लिए आपदा ऐप से जुड़ें",
+        "namePlaceholder": "अपना नाम दर्ज करें",
+        "emailPlaceholder": "अपना ईमेल दर्ज करें",
+        "passwordPlaceholder": "पासवर्ड बनाएं",
+        "signupBtn": "साइन अप",
+        "creating": "बन रहा है...",
+        "hasAccount": "पहले से अकाउंट है?"
+    },
+    "home": {
+        "greeting": "नमस्ते, {{name}}",
+        "title": "आज सुरक्षित रहें",
+        "allClear": "सब सुरक्षित",
+        "activeAlerts": "{{count}} सक्रिय अलर्ट",
+        "activeAlerts_plural": "{{count}} सक्रिय अलर्ट",
+        "tapToRespond": "जवाब देने के लिए अलर्ट पर टैप करें",
+        "noActiveDisasters": "आपके क्षेत्र में कोई सक्रिय आपदा नहीं",
+        "quickActions": "त्वरित कार्य",
+        "sos": "SOS",
+        "call112": "112 कॉल करें",
+        "safeZones": "सुरक्षित क्षेत्र",
+        "weather": "मौसम",
+        "emergencyChecklist": "आपातकालीन चेकलिस्ट",
+        "checklist": {
+            "kit": "आपातकालीन किट तैयार",
+            "contact": "परिवार का संपर्क सहेजा",
+            "evacuation": "निकासी मार्ग नियोजित"
+        },
+        "recentAlerts": "हाल के अलर्ट",
+        "noAlerts": "कोई सक्रिय अलर्ट नहीं",
+        "noAlertsDesc": "आप सुरक्षित हैं! हम किसी भी आपदा की सूचना देंगे।",
+        "allAreas": "सभी क्षेत्र"
+    },
+    "alertDetail": {
+        "title": "अलर्ट विवरण",
+        "activeWarning": "सक्रिय चेतावनी",
+        "getSafe": "सुरक्षित हों",
+        "details": "विवरण",
+        "immediateActions": "तुरंत कार्य",
+        "action1": "शांत रहें और अपने आसपास का आकलन करें",
+        "action2": "यदि आवश्यक हो तो निकासी मार्ग का पालन करें",
+        "action3": "आपातकालीन संपर्क तैयार रखें",
+        "imSafe": "मैं सुरक्षित हूं",
+        "emergencyContacts": "आपातकालीन संपर्क",
+        "emergency": "इमरजेंसी",
+        "ndrf": "NDRF",
+        "ambulance": "एम्बुलेंस"
+    },
+    "alertHistory": {
+        "title": "अलर्ट इतिहास",
+        "all": "सभी",
+        "noHistory": "कोई इतिहास नहीं",
+        "noHistoryDesc": "अलर्ट पर आपकी प्रतिक्रियाएं यहां दिखाई देंगी"
+    },
+    "profile": {
+        "title": "प्रोफ़ाइल",
+        "accountInfo": "अकाउंट जानकारी",
+        "userId": "यूजर आईडी",
+        "quickLinks": "त्वरित लिंक",
+        "alertHistory": "अलर्ट इतिहास",
+        "settings": "सेटिंग्स",
+        "helpSupport": "सहायता और समर्थन"
+    },
+    "settings": {
+        "title": "सेटिंग्स",
+        "notifications": "सूचनाएं",
+        "pushNotifications": "पुश सूचनाएं",
+        "pushDesc": "आपदा अलर्ट प्राप्त करें",
+        "soundAlerts": "ध्वनि अलर्ट",
+        "soundDesc": "गंभीर अलर्ट के लिए अलार्म बजाएं",
+        "vibration": "कंपन",
+        "vibrationDesc": "नए अलर्ट पर कंपन करें",
+        "privacyLocation": "गोपनीयता और स्थान",
+        "autoLocation": "स्वतः स्थान",
+        "autoLocationDesc": "क्षेत्रीय अलर्ट के लिए स्थान साझा करें",
+        "privacyPolicy": "गोपनीयता नीति",
+        "appearance": "दिखावट",
+        "darkMode": "डार्क मोड",
+        "darkModeDesc": "डार्क थीम पर स्विच करें",
+        "language": "भाषा",
+        "support": "सहायता",
+        "helpFaq": "सहायता और FAQ",
+        "contactSupport": "सहायता से संपर्क करें",
+        "rateApp": "ऐप को रेट करें",
+        "aboutAapada": "आपदा के बारे में",
+        "selectLanguage": "भाषा चुनें"
+    },
+    "emergency": {
+        "immediateActions": "तुरंत कार्य",
+        "action1": "शांत रहें और अपने आसपास का आकलन करें",
+        "action2": "यदि आवश्यक हो तो निकासी मार्ग का पालन करें",
+        "action3": "आपातकालीन संपर्क तैयार रखें"
+    }
+}

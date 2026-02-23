@@ -16,6 +16,7 @@ import {
     Divider,
     IconButton,
 } from 'react-native-paper';
+import { colors } from '../theme/colors';
 import useStore from '../store/useStore';
 
 const { width } = Dimensions.get('window');
@@ -252,24 +253,24 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                     </Surface>
 
                     {/* Instructions card */}
-                    <Surface style={[styles.card, { backgroundColor: '#F3EDF7' }]} elevation={0}>
-                        <Text variant="titleMedium" style={[styles.cardTitle, { color: '#1D1B20' }]}>
+                    <Surface style={[styles.card, { backgroundColor: colors.card }]} elevation={0}>
+                        <Text variant="titleMedium" style={[styles.cardTitle, { color: colors.foreground }]}>
                             Immediate Actions
                         </Text>
                         <View style={styles.instructionRow}>
-                            <Icon source="shield-check" size={20} color="#6750A4" />
+                            <Icon source="shield-check" size={20} color={colors.primary} />
                             <Text variant="bodyMedium" style={styles.instructionText}>
                                 Stay calm and assess your surroundings
                             </Text>
                         </View>
                         <View style={styles.instructionRow}>
-                            <Icon source="exit-run" size={20} color="#6750A4" />
+                            <Icon source="exit-run" size={20} color={colors.primary} />
                             <Text variant="bodyMedium" style={styles.instructionText}>
                                 Follow evacuation routes if necessary
                             </Text>
                         </View>
                         <View style={styles.instructionRow}>
-                            <Icon source="phone-in-talk" size={20} color="#6750A4" />
+                            <Icon source="phone-in-talk" size={20} color={colors.primary} />
                             <Text variant="bodyMedium" style={styles.instructionText}>
                                 Keep emergency contacts ready
                             </Text>
@@ -325,8 +326,8 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                         mode="outlined"
                         icon="hand-wave"
                         onPress={() => handleResponse('HELP')}
-                        textColor="#6750A4"
-                        style={[styles.secondaryBtn, { borderColor: '#6750A4' }]}
+                        textColor={colors.primary}
+                        style={[styles.secondaryBtn, { borderColor: colors.primary }]}
                         labelStyle={styles.secondaryBtnLabel}
                     >
                         Help
@@ -413,7 +414,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     instructionText: {
-        color: '#49454F',
+        color: colors.mutedForeground,
         flex: 1,
         lineHeight: 22,
     },
@@ -421,9 +422,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 8,
         paddingBottom: 32,
-        backgroundColor: '#FFFBFE',
+        backgroundColor: colors.background,
         borderTopWidth: 1,
-        borderTopColor: '#E7E0EC',
+        borderTopColor: colors.border,
     },
     primaryBtn: {
         borderRadius: 20,

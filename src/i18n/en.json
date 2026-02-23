@@ -1,0 +1,127 @@
+{
+    "common": {
+        "login": "Login",
+        "signup": "Sign Up",
+        "logout": "Logout",
+        "email": "Email",
+        "password": "Password",
+        "name": "Full Name",
+        "loading": "Loading...",
+        "cancel": "Cancel",
+        "save": "Save",
+        "ok": "OK",
+        "back": "Back",
+        "viewAll": "View All",
+        "seeAll": "See All"
+    },
+    "login": {
+        "title": "Stay Safe\nDuring Disasters",
+        "subtitle": "Real-time alerts, safety maps, and emergency resources — all in one app.",
+        "emailPlaceholder": "Enter your email",
+        "passwordPlaceholder": "Enter your password",
+        "loginBtn": "Login",
+        "loggingIn": "Logging in...",
+        "createAccount": "Create Account",
+        "noAccount": "Don't have an account?",
+        "pills": {
+            "liveAlerts": "Live Alerts",
+            "safetyMaps": "Safety Maps",
+            "sos": "SOS",
+            "weather": "Weather"
+        }
+    },
+    "signup": {
+        "title": "Create Account",
+        "subtitle": "Join Aapada to stay safe during disasters",
+        "namePlaceholder": "Enter your name",
+        "emailPlaceholder": "Enter your email",
+        "passwordPlaceholder": "Create a password",
+        "signupBtn": "Sign Up",
+        "creating": "Creating...",
+        "hasAccount": "Already have an account?"
+    },
+    "home": {
+        "greeting": "Hello, {{name}}",
+        "title": "Stay Safe Today",
+        "allClear": "All Clear",
+        "activeAlerts": "{{count}} Active Alert",
+        "activeAlerts_plural": "{{count}} Active Alerts",
+        "tapToRespond": "Tap an alert to respond",
+        "noActiveDisasters": "No active disasters in your area",
+        "quickActions": "Quick Actions",
+        "sos": "SOS",
+        "call112": "Call 112",
+        "safeZones": "Safe Zones",
+        "weather": "Weather",
+        "emergencyChecklist": "Emergency Checklist",
+        "checklist": {
+            "kit": "Emergency kit ready",
+            "contact": "Family contact saved",
+            "evacuation": "Evacuation route planned"
+        },
+        "recentAlerts": "Recent Alerts",
+        "noAlerts": "No Active Alerts",
+        "noAlertsDesc": "You're safe! We'll notify you of any disasters.",
+        "allAreas": "All Areas"
+    },
+    "alertDetail": {
+        "title": "Alert Details",
+        "activeWarning": "Active Warning",
+        "getSafe": "Get Safe",
+        "details": "Details",
+        "immediateActions": "Immediate Actions",
+        "action1": "Stay calm and assess your surroundings",
+        "action2": "Follow evacuation routes if necessary",
+        "action3": "Keep emergency contacts ready",
+        "imSafe": "I'm Safe",
+        "emergencyContacts": "Emergency Contacts",
+        "emergency": "Emergency",
+        "ndrf": "NDRF",
+        "ambulance": "Ambulance"
+    },
+    "alertHistory": {
+        "title": "Alert History",
+        "all": "All",
+        "noHistory": "No History",
+        "noHistoryDesc": "Your responses to alerts will appear here"
+    },
+    "profile": {
+        "title": "Profile",
+        "accountInfo": "Account Info",
+        "userId": "User ID",
+        "quickLinks": "Quick Links",
+        "alertHistory": "Alert History",
+        "settings": "Settings",
+        "helpSupport": "Help & Support"
+    },
+    "settings": {
+        "title": "Settings",
+        "notifications": "Notifications",
+        "pushNotifications": "Push Notifications",
+        "pushDesc": "Receive disaster alerts",
+        "soundAlerts": "Sound Alerts",
+        "soundDesc": "Play alarm for critical alerts",
+        "vibration": "Vibration",
+        "vibrationDesc": "Vibrate on new alerts",
+        "privacyLocation": "Privacy & Location",
+        "autoLocation": "Auto Location",
+        "autoLocationDesc": "Share location for regional alerts",
+        "privacyPolicy": "Privacy Policy",
+        "appearance": "Appearance",
+        "darkMode": "Dark Mode",
+        "darkModeDesc": "Switch to dark theme",
+        "language": "Language",
+        "support": "Support",
+        "helpFaq": "Help & FAQ",
+        "contactSupport": "Contact Support",
+        "rateApp": "Rate the App",
+        "aboutAapada": "About Aapada",
+        "selectLanguage": "Select Language"
+    },
+    "emergency": {
+        "immediateActions": "Immediate Actions",
+        "action1": "Stay calm and assess your surroundings",
+        "action2": "Follow evacuation routes if necessary",
+        "action3": "Keep emergency contacts ready"
+    }
+}

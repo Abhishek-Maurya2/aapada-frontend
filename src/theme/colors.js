@@ -1,60 +1,79 @@
-// M3 Expressive Light Theme - Color Tokens
+// Purple HSL-270 Design System (matching reference repo)
+// Converted from HSL to hex for React Native compatibility
+
 export const colors = {
+    // Core
+    background: '#FDFAFF',       // hsl(270,100%,98%)
+    foreground: '#1A1625',       // hsl(270,20%,10%)
+    card: '#F3EDF7',             // hsl(270,40%,96%)
+    cardForeground: '#1A1625',   // hsl(270,20%,10%)
+
     // Primary
-    primary: '#6750A4',
+    primary: '#7C3AED',          // hsl(270,60%,50%)
+    primaryForeground: '#FFFFFF',
     onPrimary: '#FFFFFF',
-    primaryContainer: '#EADDFF',
-    onPrimaryContainer: '#21005E',
 
-    // Secondary  
-    secondary: '#625B71',
-    onSecondary: '#FFFFFF',
-    secondaryContainer: '#E8DEF8',
-    onSecondaryContainer: '#1D192B',
+    // Secondary
+    secondary: '#E4D4F4',        // hsl(270,40%,90%)
+    secondaryForeground: '#4C1D95', // hsl(270,60%,30%)
 
-    // Tertiary
-    tertiary: '#7D5260',
-    onTertiary: '#FFFFFF',
-    tertiaryContainer: '#FFD8E4',
-    onTertiaryContainer: '#31111D',
+    // Muted
+    muted: '#EDE8F2',            // hsl(270,20%,94%)
+    mutedForeground: '#6B6B78',  // hsl(270,10%,45%)
 
-    // Error
-    error: '#B3261E',
-    onError: '#FFFFFF',
-    errorContainer: '#F9DEDC',
-    onErrorContainer: '#410E0B',
+    // Accent
+    accent: '#D4B5FF',           // hsl(270,50%,85%)
+    accentForeground: '#3B0764', // hsl(270,60%,25%)
 
-    // Surfaces
-    background: '#FFFBFE',
-    onBackground: '#1C1B1F',
-    surface: '#FFFBFE',
-    onSurface: '#1C1B1F',
-    surfaceVariant: '#E7E0EC',
-    onSurfaceVariant: '#49454F',
-    surfaceContainerLowest: '#FFFFFF',
-    surfaceContainerLow: '#F7F2FA',
-    surfaceContainer: '#F3EDF7',
-    surfaceContainerHigh: '#ECE6F0',
-    surfaceContainerHighest: '#E6E0E9',
+    // Destructive / Error
+    destructive: '#E53E3E',      // hsl(0,80%,55%)
+    error: '#E53E3E',
+    errorContainer: '#FEE2E2',
+    onErrorContainer: '#7F1D1D',
 
-    // Others
-    outline: '#79747E',
-    outlineVariant: '#CAC4D0',
-    inverseSurface: '#313033',
-    inverseOnSurface: '#F4EFF4',
-    inversePrimary: '#D0BCFF',
+    // Border / Input
+    border: '#DDD6E5',           // hsl(270,20%,88%)
+    input: '#DDD6E5',
+
+    // Ring
+    ring: '#7C3AED',
 
     // Semantic
-    success: '#006D3A',
-    successContainer: '#98F7BB',
-    warning: '#795900',
-    warningContainer: '#FFDEA9',
-    accent: '#BA1A1A',
+    success: '#22C55E',          // hsl(145,60%,40%)
+    successContainer: '#DCFCE7',
+    warning: '#F59E0B',          // hsl(35,95%,50%)
+    warningContainer: '#FEF3C7',
+
+    // Surface aliases (for compatibility)
+    surface: '#FDFAFF',
+    onSurface: '#1A1625',
+    surfaceVariant: '#F3EDF7',
+    onSurfaceVariant: '#6B6B78',
+    surfaceContainerLow: '#F3EDF7',
+    surfaceContainer: '#EDE8F2',
+    surfaceContainerHigh: '#E4D4F4',
+    surfaceContainerHighest: '#DDD6E5',
+
+    // Outline
+    outline: '#9CA3AF',
+    outlineVariant: '#DDD6E5',
+
+    // Inverse
+    inverseSurface: '#1A1625',
+    inverseOnSurface: '#F3EDF7',
+    inversePrimary: '#D4B5FF',
+
+    // Containers for Paper
+    primaryContainer: '#E4D4F4',
+    onPrimaryContainer: '#4C1D95',
+    secondaryContainer: '#E4D4F4',
+    onSecondaryContainer: '#4C1D95',
+    tertiaryContainer: '#D4B5FF',
+    onTertiaryContainer: '#3B0764',
 
     // Legacy aliases
-    text: '#1C1B1F',
-    textSecondary: '#49454F',
-    border: '#CAC4D0',
+    text: '#1A1625',
+    textSecondary: '#6B6B78',
 };
 
 export const spacing = {
@@ -67,10 +86,17 @@ export const spacing = {
 };
 
 export const typography = {
-    h1: { fontSize: 32, fontWeight: '700', color: '#1C1B1F' },
-    h2: { fontSize: 24, fontWeight: '700', color: '#1C1B1F' },
-    h3: { fontSize: 20, fontWeight: '600', color: '#1C1B1F' },
-    body: { fontSize: 16, color: '#49454F' },
-    caption: { fontSize: 14, color: '#49454F' },
-    button: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+    h1: { fontSize: 32, fontWeight: '900', color: '#1A1625', letterSpacing: -0.5 },
+    h2: { fontSize: 24, fontWeight: '900', color: '#1A1625', letterSpacing: -0.5 },
+    h3: { fontSize: 20, fontWeight: '700', color: '#1A1625' },
+    body: { fontSize: 16, color: '#6B6B78' },
+    caption: { fontSize: 14, color: '#6B6B78' },
+    button: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+};
+
+export const borderRadius = {
+    sm: 12,
+    md: 16,
+    lg: 24,    // rounded-3xl equivalent
+    full: 9999,
 };

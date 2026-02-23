@@ -1,0 +1,127 @@
+{
+    "common": {
+        "login": "ਲੌਗਇਨ",
+        "signup": "ਸਾਈਨ ਅੱਪ",
+        "logout": "ਲੌਗ ਆਊਟ",
+        "email": "ਈਮੇਲ",
+        "password": "ਪਾਸਵਰਡ",
+        "name": "ਪੂਰਾ ਨਾਮ",
+        "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+        "cancel": "ਰੱਦ ਕਰੋ",
+        "save": "ਸੇਵ ਕਰੋ",
+        "ok": "ਠੀਕ ਹੈ",
+        "back": "ਵਾਪਸ",
+        "viewAll": "ਸਭ ਦੇਖੋ",
+        "seeAll": "ਸਭ ਦੇਖੋ"
+    },
+    "login": {
+        "title": "ਆਫ਼ਤਾਂ ਦੌਰਾਨ\nਸੁਰੱਖਿਅਤ ਰਹੋ",
+        "subtitle": "ਰੀਅਲ-ਟਾਈਮ ਅਲਰਟ, ਸੁਰੱਖਿਆ ਨਕਸ਼ੇ, ਅਤੇ ਐਮਰਜੈਂਸੀ ਸਰੋਤ — ਸਭ ਇੱਕ ਐਪ ਵਿੱਚ।",
+        "emailPlaceholder": "ਆਪਣੀ ਈਮੇਲ ਦਰਜ ਕਰੋ",
+        "passwordPlaceholder": "ਆਪਣਾ ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ",
+        "loginBtn": "ਲੌਗਇਨ",
+        "loggingIn": "ਲੌਗਇਨ ਹੋ ਰਿਹਾ ਹੈ...",
+        "createAccount": "ਅਕਾਊਂਟ ਬਣਾਓ",
+        "noAccount": "ਅਕਾਊਂਟ ਨਹੀਂ ਹੈ?",
+        "pills": {
+            "liveAlerts": "ਲਾਈਵ ਅਲਰਟ",
+            "safetyMaps": "ਸੁਰੱਖਿਆ ਨਕਸ਼ੇ",
+            "sos": "SOS",
+            "weather": "ਮੌਸਮ"
+        }
+    },
+    "signup": {
+        "title": "ਅਕਾਊਂਟ ਬਣਾਓ",
+        "subtitle": "ਆਫ਼ਤਾਂ ਦੌਰਾਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣ ਲਈ ਆਪਦਾ ਐਪ ਨਾਲ ਜੁੜੋ",
+        "namePlaceholder": "ਆਪਣਾ ਨਾਮ ਦਰਜ ਕਰੋ",
+        "emailPlaceholder": "ਆਪਣੀ ਈਮੇਲ ਦਰਜ ਕਰੋ",
+        "passwordPlaceholder": "ਪਾਸਵਰਡ ਬਣਾਓ",
+        "signupBtn": "ਸਾਈਨ ਅੱਪ",
+        "creating": "ਬਣ ਰਿਹਾ ਹੈ...",
+        "hasAccount": "ਪਹਿਲਾਂ ਤੋਂ ਅਕਾਊਂਟ ਹੈ?"
+    },
+    "home": {
+        "greeting": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, {{name}}",
+        "title": "ਅੱਜ ਸੁਰੱਖਿਅਤ ਰਹੋ",
+        "allClear": "ਸਭ ਸੁਰੱਖਿਅਤ",
+        "activeAlerts": "{{count}} ਸਰਗਰਮ ਅਲਰਟ",
+        "activeAlerts_plural": "{{count}} ਸਰਗਰਮ ਅਲਰਟ",
+        "tapToRespond": "ਜਵਾਬ ਦੇਣ ਲਈ ਅਲਰਟ 'ਤੇ ਟੈਪ ਕਰੋ",
+        "noActiveDisasters": "ਤੁਹਾਡੇ ਖੇਤਰ ਵਿੱਚ ਕੋਈ ਸਰਗਰਮ ਆਫ਼ਤ ਨਹੀਂ",
+        "quickActions": "ਤੁਰੰਤ ਕਾਰਵਾਈਆਂ",
+        "sos": "SOS",
+        "call112": "112 ਕਾਲ ਕਰੋ",
+        "safeZones": "ਸੁਰੱਖਿਅਤ ਖੇਤਰ",
+        "weather": "ਮੌਸਮ",
+        "emergencyChecklist": "ਐਮਰਜੈਂਸੀ ਚੈਕਲਿਸਟ",
+        "checklist": {
+            "kit": "ਐਮਰਜੈਂਸੀ ਕਿੱਟ ਤਿਆਰ",
+            "contact": "ਪਰਿਵਾਰ ਦਾ ਸੰਪਰਕ ਸੇਵ ਕੀਤਾ",
+            "evacuation": "ਨਿਕਾਸੀ ਰਸਤਾ ਯੋਜਨਾਬੱਧ"
+        },
+        "recentAlerts": "ਹਾਲੀਆ ਅਲਰਟ",
+        "noAlerts": "ਕੋਈ ਸਰਗਰਮ ਅਲਰਟ ਨਹੀਂ",
+        "noAlertsDesc": "ਤੁਸੀਂ ਸੁਰੱਖਿਅਤ ਹੋ! ਅਸੀਂ ਕਿਸੇ ਵੀ ਆਫ਼ਤ ਦੀ ਸੂਚਨਾ ਦੇਵਾਂਗੇ।",
+        "allAreas": "ਸਾਰੇ ਖੇਤਰ"
+    },
+    "alertDetail": {
+        "title": "ਅਲਰਟ ਵੇਰਵੇ",
+        "activeWarning": "ਸਰਗਰਮ ਚੇਤਾਵਨੀ",
+        "getSafe": "ਸੁਰੱਖਿਅਤ ਹੋਵੋ",
+        "details": "ਵੇਰਵੇ",
+        "immediateActions": "ਤੁਰੰਤ ਕਾਰਵਾਈਆਂ",
+        "action1": "ਸ਼ਾਂਤ ਰਹੋ ਅਤੇ ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦਾ ਮੁਲਾਂਕਣ ਕਰੋ",
+        "action2": "ਜੇ ਲੋੜ ਹੋਵੇ ਤਾਂ ਨਿਕਾਸੀ ਰਸਤੇ ਦੀ ਪਾਲਣਾ ਕਰੋ",
+        "action3": "ਐਮਰਜੈਂਸੀ ਸੰਪਰਕ ਤਿਆਰ ਰੱਖੋ",
+        "imSafe": "ਮੈਂ ਸੁਰੱਖਿਅਤ ਹਾਂ",
+        "emergencyContacts": "ਐਮਰਜੈਂਸੀ ਸੰਪਰਕ",
+        "emergency": "ਐਮਰਜੈਂਸੀ",
+        "ndrf": "NDRF",
+        "ambulance": "ਐਂਬੂਲੈਂਸ"
+    },
+    "alertHistory": {
+        "title": "ਅਲਰਟ ਇਤਿਹਾਸ",
+        "all": "ਸਭ",
+        "noHistory": "ਕੋਈ ਇਤਿਹਾਸ ਨਹੀਂ",
+        "noHistoryDesc": "ਅਲਰਟਾਂ 'ਤੇ ਤੁਹਾਡੇ ਜਵਾਬ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੇ"
+    },
+    "profile": {
+        "title": "ਪ੍ਰੋਫ਼ਾਈਲ",
+        "accountInfo": "ਅਕਾਊਂਟ ਜਾਣਕਾਰੀ",
+        "userId": "ਯੂਜ਼ਰ ਆਈਡੀ",
+        "quickLinks": "ਤੁਰੰਤ ਲਿੰਕ",
+        "alertHistory": "ਅਲਰਟ ਇਤਿਹਾਸ",
+        "settings": "ਸੈਟਿੰਗਾਂ",
+        "helpSupport": "ਮਦਦ ਅਤੇ ਸਹਾਇਤਾ"
+    },
+    "settings": {
+        "title": "ਸੈਟਿੰਗਾਂ",
+        "notifications": "ਸੂਚਨਾਵਾਂ",
+        "pushNotifications": "ਪੁਸ਼ ਸੂਚਨਾਵਾਂ",
+        "pushDesc": "ਆਫ਼ਤ ਅਲਰਟ ਪ੍ਰਾਪਤ ਕਰੋ",
+        "soundAlerts": "ਧੁਨੀ ਅਲਰਟ",
+        "soundDesc": "ਗੰਭੀਰ ਅਲਰਟਾਂ ਲਈ ਅਲਾਰਮ ਵਜਾਓ",
+        "vibration": "ਕੰਬਣੀ",
+        "vibrationDesc": "ਨਵੇਂ ਅਲਰਟਾਂ 'ਤੇ ਕੰਬਣੀ",
+        "privacyLocation": "ਗੋਪਨੀਯਤਾ ਅਤੇ ਟਿਕਾਣਾ",
+        "autoLocation": "ਆਟੋ ਟਿਕਾਣਾ",
+        "autoLocationDesc": "ਖੇਤਰੀ ਅਲਰਟਾਂ ਲਈ ਟਿਕਾਣਾ ਸਾਂਝਾ ਕਰੋ",
+        "privacyPolicy": "ਗੋਪਨੀਯਤਾ ਨੀਤੀ",
+        "appearance": "ਦਿੱਖ",
+        "darkMode": "ਡਾਰਕ ਮੋਡ",
+        "darkModeDesc": "ਡਾਰਕ ਥੀਮ 'ਤੇ ਬਦਲੋ",
+        "language": "ਭਾਸ਼ਾ",
+        "support": "ਸਹਾਇਤਾ",
+        "helpFaq": "ਮਦਦ ਅਤੇ FAQ",
+        "contactSupport": "ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
+        "rateApp": "ਐਪ ਨੂੰ ਰੇਟ ਕਰੋ",
+        "aboutAapada": "ਆਪਦਾ ਬਾਰੇ",
+        "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ"
+    },
+    "emergency": {
+        "immediateActions": "ਤੁਰੰਤ ਕਾਰਵਾਈਆਂ",
+        "action1": "ਸ਼ਾਂਤ ਰਹੋ ਅਤੇ ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦਾ ਮੁਲਾਂਕਣ ਕਰੋ",
+        "action2": "ਜੇ ਲੋੜ ਹੋਵੇ ਤਾਂ ਨਿਕਾਸੀ ਰਸਤੇ ਦੀ ਪਾਲਣਾ ਕਰੋ",
+        "action3": "ਐਮਰਜੈਂਸੀ ਸੰਪਰਕ ਤਿਆਰ ਰੱਖੋ"
+    }
+}

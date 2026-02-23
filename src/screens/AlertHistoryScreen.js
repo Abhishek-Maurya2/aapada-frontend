@@ -1,97 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
-import { Card, Text, Chip, Appbar, Surface, Icon, useTheme } from 'react-native-paper';
-import { colors, spacing } from '../theme/colors';
-import useStore from '../store/useStore';
+import {
+    View, ScrollView, StyleSheet, TouchableOpacity,
+    RefreshControl,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Icon } from 'react-native-paper';
+import { colors, spacing, borderRadius } from '../theme/colors';
 import api from '../services/api';
+import useStore from '../store/useStore';
+import { useTranslation } from 'react-i18next';
 
-const getSeverityConfig = (severity) => {
+const SEVERITY_CONFIG = {
+    CRITICAL: { bg: '#FEE2E2', text: '#B91C1C', label: 'CRITICAL' },
+    HIGH: { bg: '#FFEDD5', text: '#C2410C', label: 'HIGH' },
+    MEDIUM: { bg: '#FEF3C7', text: '#A16207', label: 'MEDIUM' },
+    LOW: { bg: '#DCFCE7', text: '#15803D', label: 'LOW' },
+};
+
+const RESPONSE_COLORS = {
+    SAFE: { bg: '#DCFCE7', text: '#15803D', icon: 'check-circle' },
+    MEDICAL: { bg: '#FEE2E2', text: '#B91C1C', icon: 'hospital-box' },
+    FIRE: { bg: '#FFEDD5', text: '#C2410C', icon: 'fire' },
+    HELP: { bg: '#E4D4F4', text: colors.primary, icon: 'hand-wave' },
+    ACKNOWLEDGED: { bg: '#E0F2FE', text: '#0369A1', icon: 'check' },
+};
+
+const getSeverityColor = (severity) => {
     switch (severity?.toUpperCase()) {
-        case 'CRITICAL':
-            return { bg: '#F9DEDC', color: '#B3261E' };
-        case 'HIGH':
-            return { bg: '#FFDBCF', color: '#C4441C' };
-        case 'MEDIUM':
-            return { bg: '#FFDEA9', color: '#795900' };
-        default:
-            return { bg: '#C4EECD', color: '#006D3A' };
+        case 'CRITICAL': return '#dc2626';
+        case 'HIGH': return '#3b82f6';
+        case 'MEDIUM': return '#f59e0b';
+        default: return '#22c55e';
     }
 };
 
-const getResponseConfig = (response) => {
-    switch (response?.toUpperCase()) {
-        case 'SAFE':
-            return { icon: 'check-circle', bg: '#C4EECD', color: '#006D3A' };
-        case 'MEDICAL':
-            return { icon: 'hospital-box', bg: '#F9DEDC', color: '#B3261E' };
-        case 'FIRE':
-            return { icon: 'fire', bg: '#FFDEA9', color: '#795900' };
-        case 'HELP':
-            return { icon: 'hand-wave', bg: '#EADDFF', color: '#6750A4' };
-        default:
-            return { icon: 'message-alert', bg: '#E7E0EC', color: '#49454F' };
+const getSeverityIcon = (severity) => {
+    switch (severity?.toUpperCase()) {
+        case 'CRITICAL': return 'flash-alert';
+        case 'HIGH': return 'waves';
+        case 'MEDIUM': return 'weather-windy';
+        default: return 'fire';
     }
-};
-
-const HistoryCard = ({ item }) => {
-    const sev = getSeverityConfig(item.severity);
-    const resp = getResponseConfig(item.userResponse);
-
-    return (
-        <Card style={styles.card} mode="elevated">
-            <View style={[styles.indicator, { backgroundColor: sev.color }]} />
-            <Card.Content style={styles.cardContent}>
-                <View style={styles.cardHeader}>
-                    <Text variant="titleMedium" style={styles.cardTitle}>{item.title}</Text>
-                    <Chip
-                        icon={resp.icon}
-                        style={{ backgroundColor: resp.bg }}
-                        textStyle={{ color: resp.color, fontSize: 11, fontWeight: '600' }}
-                        compact
-                    >
-                        {item.userResponse}
-                    </Chip>
-                </View>
-
-                <View style={styles.locationRow}>
-                    <Icon source="map-marker" size={14} color={colors.primary} />
-                    <Text variant="bodyMedium" style={{ color: colors.primary, marginLeft: 4 }}>
-                        {item.targetRegion || 'All Areas'}
-                    </Text>
-                </View>
-
-                <Text variant="bodySmall" numberOfLines={2} style={styles.cardDescription}>
-                    {item.message}
-                </Text>
-
-                <View style={styles.timeRow}>
-                    <Icon source="clock-check-outline" size={14} color={colors.outline} />
-                    <Text variant="labelSmall" style={{ color: colors.outline, marginLeft: 4 }}>
-                        Responded: {new Date(item.respondedAt).toLocaleString()}
-                    </Text>
-                </View>
-            </Card.Content>
-        </Card>
-    );
 };
 
 export default function AlertHistoryScreen({ navigation }) {
-    const { user } = useStore();
+    const { t } = useTranslation();
     const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [filter, setFilter] = useState('all');
+    const respondedAlertIds = useStore((state) => state.respondedAlertIds);
 
     const fetchHistory = async () => {
-        if (!user?.id) return;
         setLoading(true);
         try {
-            const response = await api.get(`/alerts/history/${user.id}`);
+            const response = await api.get('/alerts');
             if (response.data.success) {
-                setHistory(response.data.data);
-            } else {
-                setHistory([]);
+                const allAlerts = response.data.data;
+                const respondedAlerts = allAlerts
+                    .filter(alert => respondedAlertIds.includes(alert._id))
+                    .map(alert => ({
+                        id: alert._id,
+                        title: alert.title || 'Alert',
+                        severity: alert.severity || 'LOW',
+                        location: alert.targetRegion || t('home.allAreas'),
+                        response: 'ACKNOWLEDGED',
+                        time: new Date(alert.createdAt).toLocaleDateString(),
+                    }));
+                setHistory(respondedAlerts);
             }
-        } catch (error) {
-            console.error('Failed to fetch history:', error);
+        } catch (err) {
+            console.error('Failed to fetch history:', err);
         } finally {
             setLoading(false);
         }
@@ -99,120 +77,129 @@ export default function AlertHistoryScreen({ navigation }) {
 
     useEffect(() => {
         fetchHistory();
-    }, [user?.id]);
+    }, [respondedAlertIds]);
+
+    const FILTERS = ['all', 'SAFE', 'MEDICAL', 'FIRE', 'HELP'];
+
+    const filteredHistory = filter === 'all'
+        ? history
+        : history.filter(h => h.response === filter);
 
     return (
-        <View style={styles.container}>
-            <Appbar.Header style={styles.appbar} elevated={false}>
-                <Appbar.BackAction onPress={() => navigation.goBack()} />
-                <Appbar.Content
-                    title="Alert History"
-                    titleStyle={{ fontWeight: '700', color: colors.onSurface }}
-                />
-            </Appbar.Header>
-
-            <FlatList
-                data={history}
-                renderItem={({ item }) => <HistoryCard item={item} />}
-                keyExtractor={(item) => item._id || Math.random().toString()}
-                contentContainerStyle={styles.listContent}
+        <SafeAreaView style={styles.container}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl
-                        refreshing={loading}
-                        onRefresh={fetchHistory}
-                        colors={[colors.primary]}
-                    />
+                    <RefreshControl refreshing={loading} onRefresh={fetchHistory} colors={[colors.primary]} />
                 }
-                ListEmptyComponent={
-                    !loading && (
-                        <View style={styles.emptyState}>
-                            <Surface style={styles.emptyIcon} elevation={0}>
-                                <Icon source="history" size={48} color={colors.primary} />
-                            </Surface>
-                            <Text variant="headlineSmall" style={styles.emptyTitle}>
-                                No History Yet
-                            </Text>
-                            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}>
-                                Alerts you respond to will appear here.
-                            </Text>
+            >
+                <View style={styles.content}>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                            <Icon source="arrow-left" size={20} color={colors.primary} />
+                        </TouchableOpacity>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.headerTitle}>{t('alertHistory.title')}</Text>
                         </View>
-                    )
-                }
-            />
-        </View>
+                        <View style={styles.countBadge}>
+                            <Text style={styles.countText}>{history.length}</Text>
+                        </View>
+                    </View>
+
+                    {/* Filter Chips */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersRow} style={{ marginTop: 20 }}>
+                        {FILTERS.map((f) => {
+                            const isActive = filter === f;
+                            return (
+                                <TouchableOpacity
+                                    key={f}
+                                    onPress={() => setFilter(f)}
+                                    style={[styles.filterChip, isActive ? styles.filterChipActive : styles.filterChipInactive]}
+                                >
+                                    <Text style={[styles.filterText, isActive ? styles.filterTextActive : styles.filterTextInactive]}>
+                                        {f === 'all' ? t('alertHistory.all') : f}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
+
+                    {/* History List */}
+                    <View style={{ gap: 12, marginTop: 20, paddingBottom: 32 }}>
+                        {filteredHistory.length > 0 ? (
+                            filteredHistory.map((item) => {
+                                const sevConfig = SEVERITY_CONFIG[item.severity?.toUpperCase()] || SEVERITY_CONFIG.LOW;
+                                const respConfig = RESPONSE_COLORS[item.response] || RESPONSE_COLORS.ACKNOWLEDGED;
+                                const alertColor = getSeverityColor(item.severity);
+                                return (
+                                    <View key={item.id} style={styles.historyCard}>
+                                        <View style={styles.cardRow}>
+                                            <View style={[styles.iconBox, { backgroundColor: alertColor + '20' }]}>
+                                                <Icon source={getSeverityIcon(item.severity)} size={22} color={alertColor} />
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <View style={styles.titleRow}>
+                                                    <Text style={styles.cardTitle}>{item.title}</Text>
+                                                    <View style={[styles.sevPill, { backgroundColor: sevConfig.bg }]}>
+                                                        <Text style={[styles.sevPillText, { color: sevConfig.text }]}>{sevConfig.label}</Text>
+                                                    </View>
+                                                </View>
+                                                <Text style={styles.cardMeta}>{item.location} · {item.time}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={[styles.responseChip, { backgroundColor: respConfig.bg }]}>
+                                            <Icon source={respConfig.icon} size={14} color={respConfig.text} />
+                                            <Text style={[styles.responseText, { color: respConfig.text }]}>{item.response}</Text>
+                                        </View>
+                                    </View>
+                                );
+                            })
+                        ) : (
+                            !loading && (
+                                <View style={styles.emptyState}>
+                                    <View style={styles.emptyIcon}>
+                                        <Icon source="history" size={48} color={colors.primary} />
+                                    </View>
+                                    <Text style={styles.emptyTitle}>{t('alertHistory.noHistory')}</Text>
+                                    <Text style={styles.emptyText}>{t('alertHistory.noHistoryDesc')}</Text>
+                                </View>
+                            )
+                        )}
+                    </View>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    appbar: {
-        backgroundColor: colors.background,
-    },
-    listContent: {
-        padding: spacing.l,
-    },
-    card: {
-        marginBottom: spacing.m,
-        overflow: 'hidden',
-        borderRadius: 20,
-        backgroundColor: colors.surfaceContainerLow,
-    },
-    cardContent: {
-        paddingLeft: spacing.l,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: spacing.xs,
-    },
-    cardTitle: {
-        flex: 1,
-        fontWeight: '700',
-        color: colors.onSurface,
-        marginRight: spacing.m,
-    },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.xs,
-    },
-    cardDescription: {
-        color: colors.onSurfaceVariant,
-        marginBottom: spacing.s,
-    },
-    timeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    indicator: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        width: 4,
-        borderTopLeftRadius: 20,
-        borderBottomLeftRadius: 20,
-    },
-    emptyState: {
-        padding: spacing.xl * 2,
-        alignItems: 'center',
-    },
-    emptyIcon: {
-        width: 88,
-        height: 88,
-        borderRadius: 44,
-        backgroundColor: colors.primaryContainer,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.m,
-    },
-    emptyTitle: {
-        fontWeight: '700',
-        color: colors.onSurface,
-        marginBottom: spacing.s,
-    },
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { paddingHorizontal: spacing.l, paddingVertical: spacing.l },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+    headerTitle: { fontSize: 24, fontWeight: '900', color: colors.foreground },
+    countBadge: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+    countText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+    filtersRow: { gap: 8 },
+    filterChip: { borderRadius: borderRadius.full, paddingHorizontal: 20, paddingVertical: 10 },
+    filterChipActive: { backgroundColor: colors.primary },
+    filterChipInactive: { backgroundColor: colors.card },
+    filterText: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
+    filterTextActive: { color: '#fff' },
+    filterTextInactive: { color: colors.foreground },
+    historyCard: { backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 16 },
+    cardRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    iconBox: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
+    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    cardTitle: { fontSize: 14, fontWeight: '700', color: colors.foreground },
+    sevPill: { borderRadius: borderRadius.full, paddingHorizontal: 8, paddingVertical: 2 },
+    sevPillText: { fontSize: 10, fontWeight: '700' },
+    cardMeta: { fontSize: 12, color: colors.mutedForeground, marginTop: 4 },
+    responseChip: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6, borderRadius: borderRadius.full, paddingHorizontal: 12, paddingVertical: 6, marginTop: 12 },
+    responseText: { fontSize: 12, fontWeight: '600' },
+    emptyState: { alignItems: 'center', paddingVertical: 48, gap: 12 },
+    emptyIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.primaryContainer, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground },
+    emptyText: { fontSize: 14, color: colors.mutedForeground, textAlign: 'center' },
 });

@@ -1,104 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-    Card, Text, Button, Chip, Avatar, IconButton,
-    Snackbar, Divider, Surface, Icon, useTheme,
-} from 'react-native-paper';
-import { colors, spacing } from '../theme/colors';
+    View, ScrollView, StyleSheet, TouchableOpacity,
+    RefreshControl, Linking,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Icon, Snackbar } from 'react-native-paper';
+import { colors, spacing, borderRadius } from '../theme/colors';
 import useStore from '../store/useStore';
+import { useTranslation } from 'react-i18next';
 
-const getSeverityConfig = (severity) => {
+const getSeverityColor = (severity) => {
     switch (severity?.toUpperCase()) {
-        case 'CRITICAL':
-            return { bg: '#F9DEDC', text: '#410E0B', badge: '#B3261E', badgeText: '#fff' };
-        case 'HIGH':
-            return { bg: '#FFDBCF', text: '#380D00', badge: '#C4441C', badgeText: '#fff' };
-        case 'MEDIUM':
-            return { bg: '#FFDEA9', text: '#261A00', badge: '#795900', badgeText: '#fff' };
-        default:
-            return { bg: '#C4EECD', text: '#002110', badge: '#006D3A', badgeText: '#fff' };
+        case 'CRITICAL': return '#dc2626';
+        case 'HIGH': return '#3b82f6';
+        case 'MEDIUM': return '#f59e0b';
+        default: return '#22c55e';
     }
 };
 
-const AlertCard = ({ alert, onPress, onAction }) => {
-    const sev = getSeverityConfig(alert.severity);
-
-    return (
-        <Card
-            style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}
-            onPress={() => onPress(alert)}
-            mode="elevated"
-        >
-            <Card.Content>
-                <View style={styles.cardHeader}>
-                    <Text variant="titleLarge" style={styles.cardTitle}>{alert.title}</Text>
-                    <Chip
-                        style={{ backgroundColor: sev.badge }}
-                        textStyle={{ color: sev.badgeText, fontWeight: '700', fontSize: 11 }}
-                        compact
-                    >
-                        {alert.severity}
-                    </Chip>
-                </View>
-
-                <View style={styles.locationRow}>
-                    <Icon source="map-marker" size={16} color={colors.primary} />
-                    <Text variant="bodyMedium" style={{ color: colors.primary, marginLeft: 4 }}>
-                        {alert.location || 'All Areas'}
-                    </Text>
-                </View>
-
-                <Text variant="bodyMedium" numberOfLines={2} style={styles.cardDescription}>
-                    {alert.description}
-                </Text>
-
-                <View style={styles.timeRow}>
-                    <Icon source="clock-outline" size={14} color={colors.outline} />
-                    <Text variant="labelSmall" style={styles.cardTime}>Received: {alert.time}</Text>
-                </View>
-            </Card.Content>
-
-            <Card.Actions style={styles.cardActions}>
-                <Button
-                    mode="outlined"
-                    icon="hospital-box"
-                    textColor={colors.error}
-                    style={{ borderColor: colors.error, borderRadius: 20 }}
-                    onPress={() => onAction(alert.id, 'MEDICAL')}
-                    compact
-                >
-                    Medical
-                </Button>
-                <Button
-                    mode="outlined"
-                    icon="fire"
-                    textColor="#795900"
-                    style={{ borderColor: '#795900', borderRadius: 20 }}
-                    onPress={() => onAction(alert.id, 'FIRE')}
-                    compact
-                >
-                    Fire
-                </Button>
-                <Button
-                    mode="contained"
-                    icon="check-circle"
-                    buttonColor={colors.success}
-                    onPress={() => onAction(alert.id, 'SAFE')}
-                    style={{ borderRadius: 20 }}
-                    compact
-                >
-                    I'm Safe
-                </Button>
-            </Card.Actions>
-        </Card>
-    );
+const getSeverityIcon = (severity) => {
+    switch (severity?.toUpperCase()) {
+        case 'CRITICAL': return 'flash-alert';
+        case 'HIGH': return 'waves';
+        case 'MEDIUM': return 'weather-windy';
+        default: return 'fire';
+    }
 };
 
 export default function HomeScreen({ navigation }) {
+    const { t } = useTranslation();
     const { alerts, loading, fetchAlerts, user, sendFeedback, dismissAlarm } = useStore();
     const [feedbackSent, setFeedbackSent] = useState(null);
-    const theme = useTheme();
+
+    const QUICK_ACTIONS = [
+        { icon: 'alarm-light', label: t('home.sos'), bg: '#EF4444', iconColor: '#fff' },
+        { icon: 'phone', label: t('home.call112'), bg: colors.primary, iconColor: '#fff' },
+        { icon: 'map-marker-radius', label: t('home.safeZones'), bg: colors.accent, iconColor: colors.primary },
+        { icon: 'weather-cloudy', label: t('home.weather'), bg: colors.secondary, iconColor: colors.secondaryForeground },
+    ];
+
+    const CHECKLIST = [
+        t('home.checklist.kit'),
+        t('home.checklist.contact'),
+        t('home.checklist.evacuation'),
+    ];
 
     useEffect(() => {
         fetchAlerts();
@@ -120,58 +65,10 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const getInitials = (name) => {
-        if (!name) return 'U';
-        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    };
-
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            {/* Header */}
-            <View style={styles.header}>
-                <View>
-                    <Text variant="labelLarge" style={{ color: colors.primary }}>
-                        Hello, {user?.name || 'User'} 👋
-                    </Text>
-                    <Text variant="headlineMedium" style={{ fontWeight: '800', color: colors.onSurface }}>
-                        Active Alerts
-                    </Text>
-                </View>
-                <Pressable onPress={() => navigation.navigate('Profile')}>
-                    <Avatar.Text
-                        size={48}
-                        label={getInitials(user?.name)}
-                        style={{ backgroundColor: colors.primaryContainer }}
-                        labelStyle={{ color: colors.onPrimaryContainer }}
-                    />
-                </Pressable>
-            </View>
-
-            {/* Stats Bar */}
-            <Surface style={styles.statsBar} elevation={0}>
-                <View style={styles.statItem}>
-                    <Text variant="headlineSmall" style={{ fontWeight: '800', color: colors.primary }}>
-                        {alerts.length}
-                    </Text>
-                    <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>Active</Text>
-                </View>
-                <Divider style={styles.statDivider} />
-                <Pressable style={styles.statItem} onPress={() => navigation.navigate('AlertHistory')}>
-                    <Icon source="clipboard-text-clock" size={24} color={colors.tertiary} />
-                    <Text variant="labelMedium" style={{ color: colors.tertiary, marginTop: 2 }}>
-                        History
-                    </Text>
-                </Pressable>
-            </Surface>
-
-            {/* Alert List */}
-            <FlatList
-                data={alerts}
-                renderItem={({ item }) => (
-                    <AlertCard alert={item} onPress={handleAlertPress} onAction={handleAction} />
-                )}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listContent}
+            <ScrollView
+                showsVerticalScrollIndicator={false}
                 refreshControl={
                     <RefreshControl
                         refreshing={loading}
@@ -179,20 +76,141 @@ export default function HomeScreen({ navigation }) {
                         colors={[colors.primary]}
                     />
                 }
-                ListEmptyComponent={
-                    !loading && (
-                        <View style={styles.emptyState}>
-                            <Surface style={styles.emptyIcon} elevation={0}>
-                                <Icon source="check-decagram" size={48} color={colors.success} />
-                            </Surface>
-                            <Text variant="headlineSmall" style={styles.emptyTitle}>All Clear!</Text>
-                            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}>
-                                No active alerts in your area. Stay safe!
+            >
+                <View style={styles.content}>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <View>
+                            <Text style={styles.greeting}>{t('home.greeting', { name: user?.name || 'User' })}</Text>
+                            <Text style={styles.headerTitle}>{t('home.title')}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('Settings')}
+                                style={styles.bellBtn}
+                            >
+                                <Icon source="cog" size={22} color={colors.primary} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('AlertHistory')}
+                                style={styles.bellBtn}
+                            >
+                                <Icon source="bell" size={22} color={colors.primary} />
+                                {alerts.length > 0 && <View style={styles.bellDot} />}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Status Banner */}
+                    <View style={styles.statusBanner}>
+                        <View style={styles.statusIcon}>
+                            <Icon source="shield" size={28} color="#fff" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.statusTitle}>
+                                {alerts.length > 0
+                                    ? t('home.activeAlerts', { count: alerts.length })
+                                    : t('home.allClear')}
+                            </Text>
+                            <Text style={styles.statusSub}>
+                                {alerts.length > 0
+                                    ? t('home.tapToRespond')
+                                    : t('home.noActiveDisasters')}
                             </Text>
                         </View>
-                    )
-                }
-            />
+                    </View>
+
+                    {/* Quick Actions */}
+                    <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
+                    <View style={styles.quickGrid}>
+                        {QUICK_ACTIONS.map((action) => (
+                            <TouchableOpacity
+                                key={action.label}
+                                style={styles.quickCard}
+                                activeOpacity={0.75}
+                                onPress={() => {
+                                    if (action.label === t('home.call112')) Linking.openURL('tel:112');
+                                }}
+                            >
+                                <View style={[styles.quickIconBox, { backgroundColor: action.bg }]}>
+                                    <Icon source={action.icon} size={22} color={action.iconColor} />
+                                </View>
+                                <Text style={styles.quickLabel}>{action.label}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Emergency Checklist */}
+                    <View style={styles.checklistCard}>
+                        <View style={styles.checklistHeader}>
+                            <Text style={styles.checklistTitle}>{t('home.emergencyChecklist')}</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ gap: 8, marginTop: 12 }}>
+                            {CHECKLIST.map((item) => (
+                                <View key={item} style={styles.checklistRow}>
+                                    <View style={styles.checkmark}>
+                                        <Text style={styles.checkmarkText}>✓</Text>
+                                    </View>
+                                    <Text style={styles.checklistItemText}>{item}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Recent Alerts */}
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>{t('home.recentAlerts')}</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('AlertHistory')}>
+                            <Text style={styles.viewAllText}>{t('common.seeAll')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ gap: 12, paddingBottom: 80 }}>
+                        {alerts.length > 0 ? (
+                            alerts.map((alert) => {
+                                const alertColor = getSeverityColor(alert.severity);
+                                return (
+                                    <TouchableOpacity
+                                        key={alert.id}
+                                        style={styles.alertCard}
+                                        onPress={() => handleAlertPress(alert)}
+                                        activeOpacity={0.75}
+                                    >
+                                        <View style={[styles.alertIconBox, { backgroundColor: alertColor + '20' }]}>
+                                            <Icon source={getSeverityIcon(alert.severity)} size={22} color={alertColor} />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.alertType}>{alert.title}</Text>
+                                            <View style={styles.alertMeta}>
+                                                <Icon source="map-marker" size={12} color={colors.mutedForeground} />
+                                                <Text style={styles.alertMetaText}>
+                                                    {alert.location || t('home.allAreas')} · {alert.time}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <Icon source="chevron-right" size={18} color={colors.mutedForeground} />
+                                    </TouchableOpacity>
+                                );
+                            })
+                        ) : (
+                            !loading && (
+                                <View style={styles.emptyState}>
+                                    <Icon source="check-decagram" size={48} color={colors.success} />
+                                    <Text style={styles.emptyTitle}>{t('home.noAlerts')}</Text>
+                                    <Text style={styles.emptyText}>{t('home.noAlertsDesc')}</Text>
+                                </View>
+                            )
+                        )}
+                    </View>
+                </View>
+            </ScrollView>
+
+            {/* Floating SOS */}
+            <TouchableOpacity style={styles.sosFab} activeOpacity={0.8}>
+                <Icon source="alarm-light" size={28} color="#fff" />
+            </TouchableOpacity>
 
             {/* Feedback Snackbar */}
             <Snackbar
@@ -210,95 +228,38 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: spacing.l,
-        paddingBottom: spacing.m,
-    },
-    statsBar: {
-        flexDirection: 'row',
-        backgroundColor: colors.surfaceContainerLow,
-        marginHorizontal: spacing.l,
-        marginBottom: spacing.m,
-        borderRadius: 20,
-        padding: spacing.m,
-        justifyContent: 'space-around',
-        alignItems: 'center',
-    },
-    statItem: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statDivider: {
-        width: 1,
-        height: 40,
-        backgroundColor: colors.outlineVariant,
-    },
-    listContent: {
-        padding: spacing.l,
-        paddingTop: 0,
-    },
-    card: {
-        marginBottom: spacing.m,
-        borderRadius: 20,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: spacing.xs,
-    },
-    cardTitle: {
-        flex: 1,
-        fontWeight: '700',
-        color: colors.onSurface,
-        marginRight: spacing.s,
-    },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.xs,
-    },
-    cardDescription: {
-        color: colors.onSurfaceVariant,
-        marginBottom: spacing.s,
-    },
-    timeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    cardTime: {
-        color: colors.outline,
-    },
-    cardActions: {
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.m,
-        paddingBottom: spacing.m,
-    },
-    emptyState: {
-        padding: spacing.xl * 2,
-        alignItems: 'center',
-    },
-    emptyIcon: {
-        width: 88,
-        height: 88,
-        borderRadius: 44,
-        backgroundColor: colors.successContainer || '#C4EECD',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.m,
-    },
-    emptyTitle: {
-        fontWeight: '700',
-        color: colors.onSurface,
-        marginBottom: spacing.s,
-    },
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { paddingHorizontal: spacing.l, paddingVertical: spacing.l },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    greeting: { fontSize: 14, color: colors.mutedForeground },
+    headerTitle: { fontSize: 24, fontWeight: '900', color: colors.foreground, letterSpacing: -0.5 },
+    bellBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+    bellDot: { position: 'absolute', right: 4, top: 4, width: 12, height: 12, borderRadius: 6, backgroundColor: '#EF4444', borderWidth: 2, borderColor: colors.background },
+    statusBanner: { marginTop: spacing.l, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.primary, borderRadius: borderRadius.lg, padding: 20 },
+    statusIcon: { width: 56, height: 56, borderRadius: borderRadius.md, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+    statusTitle: { fontSize: 18, fontWeight: '700', color: '#fff' },
+    statusSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)' },
+    sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground, marginTop: 32, marginBottom: 12 },
+    quickGrid: { flexDirection: 'row', gap: 12 },
+    quickCard: { flex: 1, alignItems: 'center', gap: 8, backgroundColor: colors.card, borderRadius: borderRadius.lg, paddingVertical: 20 },
+    quickIconBox: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
+    quickLabel: { fontSize: 12, fontWeight: '600', color: colors.foreground },
+    checklistCard: { marginTop: 32, backgroundColor: colors.accent, borderRadius: borderRadius.lg, padding: 20 },
+    checklistHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    checklistTitle: { fontSize: 16, fontWeight: '700', color: colors.accentForeground },
+    viewAllText: { fontSize: 14, fontWeight: '600', color: colors.primary },
+    checklistRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    checkmark: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+    checkmarkText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+    checklistItemText: { fontSize: 14, color: colors.accentForeground },
+    sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 },
+    alertCard: { flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 16 },
+    alertIconBox: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
+    alertType: { fontSize: 14, fontWeight: '700', color: colors.foreground },
+    alertMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+    alertMetaText: { fontSize: 12, color: colors.mutedForeground },
+    emptyState: { alignItems: 'center', paddingVertical: 48, gap: 8 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground },
+    emptyText: { fontSize: 14, color: colors.mutedForeground, textAlign: 'center' },
+    sosFab: { position: 'absolute', bottom: 32, right: 24, width: 64, height: 64, borderRadius: 32, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
 });

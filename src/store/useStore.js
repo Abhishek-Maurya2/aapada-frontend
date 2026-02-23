@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import storage from '../services/storage';
 import api from '../services/api';
 import { playAlarm, stopAlarm } from '../services/alarm';
+import * as Location from 'expo-location';
 
 const generateDeviceId = () => {
     return 'device-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -26,11 +27,30 @@ const useStore = create(
                     const deviceId = generateDeviceId();
                     const fcmToken = 'dummy-fcm-token-' + Date.now();
 
+                    // Location logic
+                    let locationCoords = { type: 'Point', coordinates: [0, 0] }; // fallback
+                    try {
+                        let { status } = await Location.requestForegroundPermissionsAsync();
+                        if (status === 'granted') {
+                            let location = await Location.getCurrentPositionAsync({});
+                            locationCoords = {
+                                type: 'Point',
+                                // Note: longitude first for MongoDB
+                                coordinates: [location.coords.longitude, location.coords.latitude]
+                            };
+                            console.log('Location fetched:', locationCoords);
+                        } else {
+                            console.warn('Location permission denied, using default [0,0]');
+                        }
+                    } catch (locErr) {
+                        console.error('Failed to get location:', locErr);
+                    }
+
                     const response = await api.post('/devices/register', {
                         deviceId,
                         fcmToken,
                         platform: 'android',
-                        location: { type: 'Point', coordinates: [0, 0] }
+                        location: locationCoords
                     });
 
                     if (response.data.success) {

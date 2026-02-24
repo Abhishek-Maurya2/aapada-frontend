@@ -1,8 +1,10 @@
 import * as TaskManager from 'expo-task-manager';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
+import * as Location from 'expo-location';
 import { Vibration, Platform } from 'react-native';
 import api from './api';
+import storage from './storage';
 
 const BACKGROUND_FETCH_TASK = 'BACKGROUND_ALERT_CHECK';
 
@@ -15,7 +17,7 @@ let lastSeenAlertId = null;
 export function playEmergencyVibration() {
   // Pattern: vibrate 500ms, pause 200ms, repeat 5 times
   const pattern = [0, 500, 200, 500, 200, 500, 200, 500, 200, 500];
-  
+
   if (Platform.OS === 'android') {
     Vibration.vibrate(pattern, false); // false = don't repeat
   } else {
@@ -25,17 +27,51 @@ export function playEmergencyVibration() {
 
 /**
  * Check for new alerts and notify the user
+ * Uses device-aware endpoint with location update
  */
 async function checkForNewAlerts() {
   try {
-    const response = await api.get('/alerts');
+    // Try to get stored user info for device-aware filtering
+    let deviceId = null;
+    try {
+      const stored = await storage.getItem('aapada-storage');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        deviceId = parsed?.state?.user?.id;
+      }
+    } catch (e) {
+      console.log('Could not read stored user:', e.message);
+    }
+
+    // Update location on server if we have a device ID
+    if (deviceId) {
+      try {
+        const { status } = await Location.getForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          await api.put(`/devices/${deviceId}/location`, {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      } catch (locErr) {
+        console.log('Background location update failed:', locErr.message);
+      }
+    }
+
+    // Use device-aware endpoint if available, fallback to global
+    const endpoint = deviceId ? `/alerts/device/${deviceId}` : '/alerts';
+    const response = await api.get(endpoint);
+
     if (response.data.success && response.data.data.length > 0) {
       const latestAlert = response.data.data[0];
-      
+
       // Check if this is a new alert we haven't seen
       if (latestAlert._id !== lastSeenAlertId) {
         lastSeenAlertId = latestAlert._id;
-        
+
         // Schedule a local notification with high priority
         await Notifications.scheduleNotificationAsync({
           content: {
@@ -48,10 +84,10 @@ async function checkForNewAlerts() {
           },
           trigger: null, // Immediate
         });
-        
+
         // Also vibrate intensely
         playEmergencyVibration();
-        
+
         return BackgroundFetch.BackgroundFetchResult.NewData;
       }
     }
@@ -88,7 +124,7 @@ export async function registerBackgroundAlertCheck() {
  */
 export async function createPersistentNotification() {
   if (Platform.OS !== 'android') return;
-  
+
   try {
     // Create a dedicated channel for the persistent notification
     await Notifications.setNotificationChannelAsync('persistent', {
@@ -98,7 +134,7 @@ export async function createPersistentNotification() {
       vibrationPattern: null,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
     });
-    
+
     // Schedule the persistent notification
     await Notifications.scheduleNotificationAsync({
       content: {

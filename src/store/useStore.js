@@ -73,13 +73,47 @@ const useStore = create(
 
             logout: () => set({ user: null, isAuthenticated: false, alerts: [], respondedAlertIds: [] }),
 
+            // Update device location on the server
+            updateLocation: async () => {
+                try {
+                    const { user } = get();
+                    if (!user?.id) return;
+
+                    let { status } = await Location.getForegroundPermissionsAsync();
+                    if (status !== 'granted') {
+                        const perm = await Location.requestForegroundPermissionsAsync();
+                        status = perm.status;
+                    }
+                    if (status !== 'granted') return;
+
+                    const location = await Location.getCurrentPositionAsync({
+                        accuracy: Location.Accuracy.Balanced,
+                    });
+
+                    await api.put(`/devices/${user.id}/location`, {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                    });
+                } catch (err) {
+                    console.error('Location update failed:', err.message);
+                }
+            },
+
             fetchAlerts: async (silent = false) => {
                 if (!silent) {
                     set({ loading: true, error: null });
                 }
                 try {
-                    const response = await api.get('/alerts');
-                    const { respondedAlertIds, lastSeenAlertId } = get();
+                    const { user, respondedAlertIds, lastSeenAlertId } = get();
+
+                    // Update location before fetching so backend has fresh coordinates
+                    await get().updateLocation();
+
+                    // Use device-aware endpoint for geofence-filtered alerts
+                    const endpoint = user?.id
+                        ? `/alerts/device/${user.id}`
+                        : '/alerts';
+                    const response = await api.get(endpoint);
 
                     if (response.data.success) {
                         // Filter out alerts user has already responded to

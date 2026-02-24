@@ -83,14 +83,25 @@ const useStore = create(
 
                     if (response.data.success) {
                         // Filter out alerts user has already responded to
-                        const allAlerts = response.data.data.map(alert => ({
-                            id: alert._id,
-                            title: alert.title,
-                            severity: alert.severity,
-                            location: alert.targetRegion,
-                            time: new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            description: alert.message
-                        }));
+                        const allAlerts = response.data.data.map(alert => {
+                            let parsedLocation = 'Global';
+                            if (alert.targetRegion) {
+                                if (typeof alert.targetRegion === 'string') {
+                                    parsedLocation = alert.targetRegion;
+                                } else if (alert.targetRegion.type === 'Point' && alert.targetRegion.radius) {
+                                    parsedLocation = `Geofenced Area (${alert.targetRegion.radius}m radius)`;
+                                }
+                            }
+
+                            return {
+                                id: alert._id,
+                                title: alert.title,
+                                severity: alert.severity,
+                                location: parsedLocation,
+                                time: new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                description: alert.message
+                            };
+                        });
 
                         const activeAlerts = allAlerts.filter(a => !respondedAlertIds.includes(a.id));
 

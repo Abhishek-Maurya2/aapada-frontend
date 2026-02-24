@@ -84,6 +84,16 @@ export default function EmergencyAlertScreen({ route, navigation }) {
     const { sendFeedback, dismissAlarm } = useStore();
     const theme = getSeverityTheme(alert.severity);
 
+    const getDisplayLocation = () => {
+        const loc = alert.location || alert.targetRegion;
+        if (!loc) return 'All Areas';
+        if (typeof loc === 'string') return loc;
+        if (typeof loc === 'object' && loc.type === 'Point') {
+            return `Geofenced Area (${loc.radius}m)`;
+        }
+        return 'All Areas';
+    };
+
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(40)).current;
@@ -225,7 +235,7 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                                 variant="labelLarge"
                                 style={{ color: theme.onContainer, marginLeft: 6 }}
                             >
-                                {alert.location || 'All Areas'}
+                                {getDisplayLocation()}
                             </Text>
                         </Surface>
                         <Surface

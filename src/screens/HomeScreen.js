@@ -121,6 +121,7 @@ export default function HomeScreen({ navigation }) {
                     </View>
 
                     {/* Quick Actions */}
+                    {/*
                     <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
                     <View style={styles.quickGrid}>
                         {QUICK_ACTIONS.map((action) => (
@@ -138,7 +139,7 @@ export default function HomeScreen({ navigation }) {
                                 <Text style={styles.quickLabel}>{action.label}</Text>
                             </TouchableOpacity>
                         ))}
-                    </View>
+                    </View>*/}
 
                     {/* Emergency Checklist */}
                     <View style={styles.checklistCard}>
@@ -208,9 +209,9 @@ export default function HomeScreen({ navigation }) {
             </ScrollView>
 
             {/* Floating SOS */}
-            <TouchableOpacity style={styles.sosFab} activeOpacity={0.8}>
+            {/* <TouchableOpacity style={styles.sosFab} activeOpacity={0.8}>
                 <Icon source="alarm-light" size={28} color="#fff" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Feedback Snackbar */}
             <Snackbar

@@ -62,7 +62,11 @@ export default function AlertHistoryScreen({ navigation }) {
                         id: alert._id,
                         title: alert.title || 'Alert',
                         severity: alert.severity || 'LOW',
-                        location: alert.targetRegion || t('home.allAreas'),
+                        location: typeof alert.targetRegion === 'string'
+                            ? alert.targetRegion
+                            : (alert.targetRegion?.type === 'Point'
+                                ? `Geofenced Area (${alert.targetRegion.radius}m)`
+                                : t('home.allAreas')),
                         response: 'ACKNOWLEDGED',
                         time: new Date(alert.createdAt).toLocaleDateString(),
                     }));

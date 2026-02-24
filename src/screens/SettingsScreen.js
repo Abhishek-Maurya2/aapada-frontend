@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Constants from 'expo-constants';
 import {
     View, ScrollView, StyleSheet, TouchableOpacity, Switch, Linking,
     Modal, Pressable,
@@ -137,7 +138,7 @@ export default function SettingsScreen({ navigation }) {
                         <View style={styles.divider} />
                         <SettingLink icon="star" label={t('settings.rateApp')} onPress={() => { }} />
                         <View style={styles.divider} />
-                        <SettingLink icon="information" label={t('settings.aboutAapada')} rightText="v1.0.0" onPress={() => { }} />
+                        <SettingLink icon="information" label={t('settings.aboutAapada')} rightText={`v${Constants.expoConfig?.version || '1.0.0'}`} onPress={() => { }} />
                     </View>
 
                     {/* Logout */}

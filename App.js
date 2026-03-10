@@ -20,6 +20,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import AlertHistoryScreen from './src/screens/AlertHistoryScreen';
 import EmergencyAlertScreen from './src/screens/EmergencyAlertScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
 import useStore from './src/store/useStore';
 
 const Stack = createNativeStackNavigator();
@@ -158,6 +159,11 @@ export default function App() {
             <Stack.Screen
               name="Settings"
               component={SettingsScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

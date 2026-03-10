@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Icon, Avatar } from 'react-native-paper';
 import { colors, spacing, borderRadius } from '../theme/colors';
@@ -35,14 +35,22 @@ export default function ProfileScreen({ navigation }) {
 
                     {/* Profile Card */}
                     <View style={styles.profileCard}>
-                        <Avatar.Text
-                            size={96}
-                            label={getInitials(user?.name)}
-                            style={{ backgroundColor: colors.accent }}
-                            labelStyle={{ color: colors.primary, fontWeight: '800' }}
-                        />
+                        {user?.profilePhoto ? (
+                            <Image source={{ uri: user.profilePhoto }} style={styles.profileImage} />
+                        ) : (
+                            <Avatar.Text
+                                size={96}
+                                label={getInitials(user?.name)}
+                                style={{ backgroundColor: colors.accent }}
+                                labelStyle={{ color: colors.primary, fontWeight: '800' }}
+                            />
+                        )}
                         <Text style={styles.profileName}>{user?.name || 'User'}</Text>
                         <Text style={styles.profileEmail}>{user?.email || 'No email'}</Text>
+                        <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('EditProfile')} activeOpacity={0.8}>
+                            <Icon source="pencil" size={16} color={colors.primaryForeground} />
+                            <Text style={styles.editBtnText}>Edit Profile</Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Info Section */}
@@ -52,6 +60,7 @@ export default function ProfileScreen({ navigation }) {
                             {[
                                 { icon: 'account', label: t('common.name'), value: user?.name || '—' },
                                 { icon: 'email', label: t('common.email'), value: user?.email || '—' },
+                                { icon: 'phone', label: t('common.phone', 'Phone'), value: user?.phone || '—' },
                                 { icon: 'identifier', label: t('profile.userId'), value: user?.id?.slice(0, 16) || '—' },
                             ].map((item, i) => (
                                 <View key={item.label}>
@@ -64,7 +73,7 @@ export default function ProfileScreen({ navigation }) {
                                             <Text style={styles.infoValue}>{item.value}</Text>
                                         </View>
                                     </View>
-                                    {i < 2 && <View style={styles.divider} />}
+                                    {i < 3 && <View style={styles.divider} />}
                                 </View>
                             ))}
                         </View>
@@ -111,8 +120,11 @@ const styles = StyleSheet.create({
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
     headerTitle: { fontSize: 24, fontWeight: '900', color: colors.foreground, flex: 1 },
     profileCard: { marginTop: spacing.l, alignItems: 'center', backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 32, gap: 8 },
+    profileImage: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.accent },
     profileName: { fontSize: 22, fontWeight: '800', color: colors.foreground, marginTop: 8 },
     profileEmail: { fontSize: 14, color: colors.mutedForeground },
+    editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, backgroundColor: colors.primary, borderRadius: borderRadius.full, paddingHorizontal: 20, paddingVertical: 10 },
+    editBtnText: { fontSize: 14, fontWeight: '700', color: colors.primaryForeground },
     section: { marginTop: 28 },
     sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground, marginBottom: 12 },
     infoCard: { backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 16 },

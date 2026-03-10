@@ -21,7 +21,7 @@ const useStore = create(
             error: null,
 
             // Actions
-            login: async (email, password, name) => {
+            login: async (email, password, name, phone) => {
                 set({ loading: true, error: null });
                 try {
                     const deviceId = generateDeviceId();
@@ -50,14 +50,19 @@ const useStore = create(
                         deviceId,
                         fcmToken,
                         platform: 'android',
-                        location: locationCoords
+                        location: locationCoords,
+                        name: name || email.split('@')[0],
+                        email: email,
+                        phone: phone || ''
                     });
 
                     if (response.data.success) {
                         const user = {
                             id: response.data.data.deviceId,
-                            name: name || email.split('@')[0],
-                            email: email
+                            name: response.data.data.name || name || email.split('@')[0],
+                            email: response.data.data.email || email,
+                            phone: response.data.data.phone || phone || '',
+                            profilePhoto: response.data.data.profilePhoto || null,
                         };
                         set({ user, isAuthenticated: true, loading: false, respondedAlertIds: [] });
                         return true;
@@ -72,6 +77,41 @@ const useStore = create(
             },
 
             logout: () => set({ user: null, isAuthenticated: false, alerts: [], respondedAlertIds: [] }),
+
+            updateProfile: async (name, email, phone, profilePhotoUrl) => {
+                set({ loading: true, error: null });
+                try {
+                    const { user } = get();
+                    if (!user?.id) throw new Error('Not logged in');
+
+                    const response = await api.put(`/devices/${user.id}/profile`, {
+                        name,
+                        email,
+                        phone,
+                        profilePhoto: profilePhotoUrl
+                    });
+
+                    if (response.data.success) {
+                        set({
+                            user: {
+                                ...user,
+                                name: response.data.data.name || name,
+                                email: response.data.data.email || email,
+                                phone: response.data.data.phone || phone,
+                                profilePhoto: response.data.data.profilePhoto || profilePhotoUrl
+                            },
+                            loading: false
+                        });
+                        return true;
+                    } else {
+                        throw new Error(response.data.message || 'Profile update failed');
+                    }
+                } catch (err) {
+                    console.error('Update profile error:', err);
+                    set({ error: err.response?.data?.message || err.message, loading: false });
+                    return false;
+                }
+            },
 
             // Update device location on the server
             updateLocation: async () => {

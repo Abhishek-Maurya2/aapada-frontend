@@ -18,11 +18,49 @@ import {
 } from 'react-native-paper';
 import { colors } from '../theme/colors';
 import useStore from '../store/useStore';
+import { getPrecautionsForType } from '../data/alertPrecautions';
 
 const { width } = Dimensions.get('window');
 
 // M3 Expressive color tokens per severity
-const getSeverityTheme = (severity) => {
+const FLAG_COLORS = {
+    RED: '#BA1A1A',
+    ORANGE: '#C4441C',
+    YELLOW: '#795900',
+    GREEN: '#006D3A'
+};
+
+const FLAG_LIGHT_COLORS = {
+    RED: '#FFDAD6',
+    ORANGE: '#FFDBCF',
+    YELLOW: '#FFDEA9',
+    GREEN: '#C4EECD'
+};
+
+const FLAG_HEADER_COLORS = {
+    RED: '#FFB4AB',
+    ORANGE: '#FFB59E',
+    YELLOW: '#FFDF9B',
+    GREEN: '#A7D8B3'
+};
+
+const getSeverityTheme = (severity, flag) => {
+    // Priority to Flag if it exists
+    if (flag && FLAG_COLORS[flag]) {
+        return {
+            container: FLAG_LIGHT_COLORS[flag],
+            onContainer: '#261A00',
+            accent: FLAG_COLORS[flag],
+            onAccent: '#FFFFFF',
+            surface: '#FFFBFF',
+            badge: FLAG_COLORS[flag],
+            badgeText: '#FFFFFF',
+            icon: 'alert-decagram',
+            label: flag,
+            headerBg: FLAG_HEADER_COLORS[flag],
+        };
+    }
+
     switch (severity?.toUpperCase()) {
         case 'CRITICAL':
             return {
@@ -82,7 +120,8 @@ const getSeverityTheme = (severity) => {
 export default function EmergencyAlertScreen({ route, navigation }) {
     const { alert } = route.params;
     const { sendFeedback, dismissAlarm } = useStore();
-    const theme = getSeverityTheme(alert.severity);
+    const theme = getSeverityTheme(alert.severity, alert.flag);
+    const alertData = getPrecautionsForType(alert.alertType || 'Other');
 
     const getDisplayLocation = () => {
         const loc = alert.location || alert.targetRegion;
@@ -189,7 +228,7 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                         },
                     ]}
                 >
-                    <Icon source={theme.icon} size={48} color={theme.onAccent} />
+                    <Icon source={alertData.icon || theme.icon} size={48} color={theme.onAccent} />
                 </Animated.View>
 
                 {/* Severity chip */}
@@ -267,24 +306,14 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                         <Text variant="titleMedium" style={[styles.cardTitle, { color: colors.foreground }]}>
                             Immediate Actions
                         </Text>
-                        <View style={styles.instructionRow}>
-                            <Icon source="shield-check" size={20} color={colors.primary} />
-                            <Text variant="bodyMedium" style={styles.instructionText}>
-                                Stay calm and assess your surroundings
-                            </Text>
-                        </View>
-                        <View style={styles.instructionRow}>
-                            <Icon source="exit-run" size={20} color={colors.primary} />
-                            <Text variant="bodyMedium" style={styles.instructionText}>
-                                Follow evacuation routes if necessary
-                            </Text>
-                        </View>
-                        <View style={styles.instructionRow}>
-                            <Icon source="phone-in-talk" size={20} color={colors.primary} />
-                            <Text variant="bodyMedium" style={styles.instructionText}>
-                                Keep emergency contacts ready
-                            </Text>
-                        </View>
+                        {alertData.precautions.slice(0, 3).map((text, idx) => (
+                            <View key={idx} style={styles.instructionRow}>
+                                <Icon source="shield-check" size={20} color={theme.accent} />
+                                <Text variant="bodyMedium" style={styles.instructionText}>
+                                    {text}
+                                </Text>
+                            </View>
+                        ))}
                     </Surface>
                 </ScrollView>
             </Animated.View>

@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Icon, Avatar } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { colors, spacing, borderRadius } from '../theme/colors';
 import useStore from '../store/useStore';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +39,15 @@ export default function EditProfileScreen({ navigation }) {
 
         if (!result.canceled && result.assets[0]) {
             const asset = result.assets[0];
-            const base64Uri = `data:image/jpeg;base64,${asset.base64}`;
+            
+            // Compress and resize the image
+            const manipulatedImage = await ImageManipulator.manipulateAsync(
+                asset.uri,
+                [{ resize: { width: 300, height: 300 } }],
+                { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+            );
+
+            const base64Uri = `data:image/jpeg;base64,${manipulatedImage.base64}`;
             setProfilePhoto(base64Uri);
         }
     };

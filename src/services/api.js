@@ -11,6 +11,12 @@ const API_URL = Platform.OS === 'web'
     ? 'https://aapada-backend.onrender.com/api/v1'
     : 'https://aapada-backend.onrender.com/api/v1';
 
+
+// const API_URL = Platform.OS === 'web'
+//     ? 'https://aapada-backend.netlify.app/api/v1'
+//     : 'https://aapada-backend.netlify.app/api/v1';
+
+
 const api = axios.create({
     baseURL: API_URL,
     headers: {

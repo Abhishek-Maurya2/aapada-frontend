@@ -1,49 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    View, ScrollView, StyleSheet, TouchableOpacity, Linking,
+    View, ScrollView, StyleSheet, TouchableOpacity, Linking, Share, Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Icon } from 'react-native-paper';
+import { Text, Icon, Surface } from 'react-native-paper';
 import { colors, spacing, borderRadius } from '../theme/colors';
 import { useTranslation } from 'react-i18next';
+import { getPrecautionsForType } from '../data/alertPrecautions';
+
+const { width } = Dimensions.get('window');
 
 const SEVERITY_CONFIG = {
-    CRITICAL: { bg: '#FEE2E2', text: '#B91C1C', label: 'CRITICAL' },
-    HIGH: { bg: '#FFEDD5', text: '#C2410C', label: 'HIGH' },
-    MEDIUM: { bg: '#FEF3C7', text: '#A16207', label: 'MEDIUM' },
-    LOW: { bg: '#DCFCE7', text: '#15803D', label: 'LOW' },
+    CRITICAL: { bg: '#FEE2E2', text: '#B91C1C', label: 'CRITICAL', flag: '#EF4444' },
+    HIGH: { bg: '#FFEDD5', text: '#C2410C', label: 'HIGH', flag: '#F97316' },
+    MEDIUM: { bg: '#FEF3C7', text: '#A16207', label: 'MEDIUM', flag: '#EAB308' },
+    LOW: { bg: '#DCFCE7', text: '#15803D', label: 'LOW', flag: '#22C55E' },
 };
 
-const getSeverityColor = (severity) => {
-    switch (severity?.toUpperCase()) {
-        case 'CRITICAL': return '#dc2626';
-        case 'HIGH': return '#3b82f6';
-        case 'MEDIUM': return '#f59e0b';
-        default: return '#22c55e';
-    }
-};
-
-const getSeverityIcon = (severity) => {
-    switch (severity?.toUpperCase()) {
-        case 'CRITICAL': return 'flash-alert';
-        case 'HIGH': return 'waves';
-        case 'MEDIUM': return 'weather-windy';
-        default: return 'fire';
-    }
+const FLAG_COLORS = {
+    RED: '#EF4444',
+    ORANGE: '#F97316',
+    YELLOW: '#EAB308',
+    GREEN: '#22C55E'
 };
 
 export default function AlertDetailScreen({ route, navigation }) {
     const { t } = useTranslation();
     const { alert } = route.params;
     const sevConfig = SEVERITY_CONFIG[alert.severity?.toUpperCase()] || SEVERITY_CONFIG.LOW;
-    const alertColor = getSeverityColor(alert.severity);
+    const alertData = getPrecautionsForType(alert.alertType || 'Other');
+
+    const [timeLeft, setTimeLeft] = useState('');
     const [expanded, setExpanded] = useState(true);
 
-    const EMERGENCY_CONTACTS = [
-        { label: t('alertDetail.emergency'), number: '112', icon: 'phone', bg: '#EF4444' },
-        { label: t('alertDetail.ndrf'), number: '011-24363260', icon: 'shield', bg: colors.primary },
-        { label: t('alertDetail.ambulance'), number: '108', icon: 'ambulance', bg: '#3B82F6' },
-    ];
+    useEffect(() => {
+        if (!alert.expiresAt) {
+            setTimeLeft('');
+            return;
+        }
+
+        const updateCountdown = () => {
+            const now = new Date();
+            const expiry = new Date(alert.expiresAt);
+            const diff = expiry - now;
+
+            if (diff <= 0) {
+                setTimeLeft('Expired');
+                return;
+            }
+
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (h > 24) {
+                setTimeLeft(`Expires in ${Math.floor(h / 24)}d ${h % 24}h`);
+            } else if (h > 0) {
+                setTimeLeft(`Expires in ${h}h ${m}m`);
+            } else {
+                setTimeLeft(`Expires in ${m}m`);
+            }
+        };
+
+        updateCountdown();
+        const timer = setInterval(updateCountdown, 60000);
+        return () => clearInterval(timer);
+    }, [alert.expiresAt]);
+
+    const handleAction = (actionId) => {
+        switch (actionId) {
+            case '112':
+            case 'fire_dept':
+                Linking.openURL(`tel:${actionId === '112' ? '112' : '101'}`);
+                break;
+            case 'share':
+                Share.share({
+                    message: `${alert.title}\n\n${alert.message}\n\nLocation: ${alert.location || 'All areas'}\n\nShared via Aapada App`,
+                });
+                break;
+            case 'safe_zones':
+                // Placeholder navigation
+                break;
+            default:
+                console.log('Action handled:', actionId);
+        }
+    };
+
+    const displayFlagColor = alert.flag ? FLAG_COLORS[alert.flag] : sevConfig.flag;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -55,101 +97,105 @@ export default function AlertDetailScreen({ route, navigation }) {
                             <Icon source="arrow-left" size={20} color={colors.primary} />
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.headerTitle}>{t('alertDetail.title')}</Text>
+                            <Text style={styles.headerTitle}>{alert.alertType || 'Alert'} Details</Text>
                         </View>
-                        <View style={[styles.badge, { backgroundColor: sevConfig.bg }]}>
-                            <Text style={[styles.badgeText, { color: sevConfig.text }]}>{sevConfig.label}</Text>
-                        </View>
-                    </View>
-
-                    {/* Active Warning Banner */}
-                    <View style={styles.warningBanner}>
-                        <View style={styles.warningIcon}>
-                            <Icon source="shield-alert" size={24} color="#fff" />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.warningTitle}>{t('alertDetail.activeWarning')}</Text>
-                            <Text style={styles.warningSub}>{alert.title}</Text>
+                        <View style={[styles.flagBadge, { backgroundColor: displayFlagColor }]}>
+                            <Icon source="flag-variant" size={14} color="#fff" />
+                            <Text style={styles.flagText}>{alert.flag || alert.severity}</Text>
                         </View>
                     </View>
 
-                    {/* Alert Card */}
-                    <TouchableOpacity style={styles.alertCard} onPress={() => setExpanded(!expanded)} activeOpacity={0.8}>
-                        <View style={styles.alertCardRow}>
-                            <View style={[styles.alertIconBox, { backgroundColor: alertColor + '20' }]}>
-                                <Icon source={getSeverityIcon(alert.severity)} size={22} color={alertColor} />
+                    {/* Banner Section */}
+                    <Surface style={[styles.mainCard, { borderColor: displayFlagColor + '40' }]} elevation={2}>
+                        <View style={[styles.cardHeader, { backgroundColor: displayFlagColor + '10' }]}>
+                            <View style={[styles.iconBox, { backgroundColor: displayFlagColor }]}>
+                                <Icon source={alertData.icon} size={28} color="#fff" />
                             </View>
                             <View style={{ flex: 1 }}>
-                                <View style={styles.alertTitleRow}>
-                                    <Text style={styles.alertType}>{alert.title}</Text>
-                                    <View style={[styles.sevPill, { backgroundColor: sevConfig.bg }]}>
-                                        <Text style={[styles.sevPillText, { color: sevConfig.text }]}>{sevConfig.label}</Text>
+                                <Text style={styles.cardTitle}>{alert.title}</Text>
+                                <View style={styles.metaRow}>
+                                    <View style={styles.metaItem}>
+                                        <Icon source="map-marker" size={14} color={colors.mutedForeground} />
+                                        <Text style={styles.metaText}>{alert.location || 'All Areas'}</Text>
                                     </View>
-                                </View>
-                                <View style={styles.alertMeta}>
-                                    <Icon source="map-marker" size={12} color={colors.mutedForeground} />
-                                    <Text style={styles.alertMetaText}>
-                                        {alert.location || t('home.allAreas')} · {alert.time}
-                                    </Text>
+                                    {timeLeft ? (
+                                        <View style={styles.metaItem}>
+                                            <Icon source="clock-outline" size={14} color={timeLeft === 'Expired' ? colors.error : colors.mutedForeground} />
+                                            <Text style={[styles.metaText, timeLeft === 'Expired' ? { color: colors.error, fontWeight: '700' } : null]}>
+                                                {timeLeft}
+                                            </Text>
+                                        </View>
+                                    ) : null}
                                 </View>
                             </View>
-                            <Icon source="chevron-right" size={16} color={colors.mutedForeground} />
                         </View>
-                        {expanded && (
-                            <View style={styles.expandedSection}>
-                                <Text style={styles.descriptionText}>{alert.description}</Text>
-                                <View style={styles.expandedBtns}>
-                                    <TouchableOpacity style={styles.getAfeBtn} onPress={() => navigation.navigate('EmergencyAlert', { alert })}>
-                                        <Icon source="shield" size={14} color="#fff" />
-                                        <Text style={styles.getSafeText}>{t('alertDetail.getSafe')}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.detailsBtn}>
-                                        <Icon source="information" size={14} color={colors.secondaryForeground} />
-                                        <Text style={styles.detailsBtnText}>{t('alertDetail.details')}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-                    </TouchableOpacity>
 
-                    {/* Immediate Actions */}
-                    <View style={styles.actionsCard}>
-                        <Text style={styles.actionsTitle}>{t('alertDetail.immediateActions')}</Text>
-                        <View style={{ gap: 10 }}>
-                            {[
-                                { icon: 'shield-check', text: t('alertDetail.action1') },
-                                { icon: 'exit-run', text: t('alertDetail.action2') },
-                                { icon: 'phone-in-talk', text: t('alertDetail.action3') },
-                            ].map((item) => (
-                                <View key={item.text} style={styles.actionRow}>
-                                    <Icon source={item.icon} size={20} color={colors.primary} />
-                                    <Text style={styles.actionText}>{item.text}</Text>
+                        <View style={styles.cardBody}>
+                            <Text style={styles.description}>{alert.message || alert.description}</Text>
+
+                            {alert.additionalInfo ? (
+                                <View style={styles.additionalInfoBox}>
+                                    <Text style={styles.additionalInfoTitle}>Additional Information</Text>
+                                    <Text style={styles.additionalInfoText}>{alert.additionalInfo}</Text>
                                 </View>
-                            ))}
+                            ) : null}
                         </View>
+                    </Surface>
+
+                    {/* Precautionary Measures */}
+                    <Text style={styles.sectionTitle}>Safety Instructions</Text>
+                    <View style={styles.precautionsContainer}>
+                        {alertData.precautions.map((item, index) => (
+                            <View key={index} style={styles.precautionItem}>
+                                <View style={[styles.precautionNum, { backgroundColor: displayFlagColor + '20' }]}>
+                                    <Text style={[styles.precautionNumText, { color: displayFlagColor }]}>{index + 1}</Text>
+                                </View>
+                                <Text style={styles.precautionText}>{item}</Text>
+                            </View>
+                        ))}
                     </View>
 
-                    {/* I'm Safe Button */}
-                    <TouchableOpacity style={styles.safeBtn} onPress={() => navigation.navigate('EmergencyAlert', { alert })} activeOpacity={0.8}>
+                    {/* Quick Actions */}
+                    <Text style={styles.sectionTitle}>Quick Actions</Text>
+                    <View style={styles.actionsGrid}>
+                        {alertData.actions.map((action) => (
+                            <TouchableOpacity
+                                key={action.id}
+                                style={styles.actionButton}
+                                onPress={() => handleAction(action.id)}
+                                activeOpacity={0.7}
+                            >
+                                <Surface style={styles.actionIconSurface} elevation={1}>
+                                    <Icon source={action.icon} size={24} color={colors.primary} />
+                                </Surface>
+                                <Text style={styles.actionButtonLabel}>{action.label}</Text>
+                            </TouchableOpacity>
+                        ))}
+                        <TouchableOpacity
+                            style={styles.actionButton}
+                            onPress={() => handleAction('share')}
+                            activeOpacity={0.7}
+                        >
+                            <Surface style={styles.actionIconSurface} elevation={1}>
+                                <Icon source="share-variant" size={24} color={colors.primary} />
+                            </Surface>
+                            <Text style={styles.actionButtonLabel}>Share Alert</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Response Section */}
+                    <TouchableOpacity
+                        style={[styles.safeBtn, { borderColor: colors.primary }]}
+                        onPress={() => navigation.navigate('EmergencyAlert', { alert })}
+                        activeOpacity={0.8}
+                    >
                         <View style={styles.safeCheckmark}>
                             <Text style={styles.safeCheckText}>✓</Text>
                         </View>
-                        <Text style={styles.safeBtnText}>{t('alertDetail.imSafe')}</Text>
+                        <Text style={styles.safeBtnText}>I am safe, don't worry</Text>
                     </TouchableOpacity>
 
-                    {/* Emergency Contacts */}
-                    <Text style={styles.sectionTitle}>{t('alertDetail.emergencyContacts')}</Text>
-                    <View style={styles.contactsRow}>
-                        {EMERGENCY_CONTACTS.map((contact) => (
-                            <TouchableOpacity key={contact.label} style={styles.contactCard} activeOpacity={0.75} onPress={() => Linking.openURL(`tel:${contact.number}`)}>
-                                <View style={[styles.contactIcon, { backgroundColor: contact.bg }]}>
-                                    <Icon source={contact.icon} size={20} color="#fff" />
-                                </View>
-                                <Text style={styles.contactLabel}>{contact.label}</Text>
-                                <Text style={styles.contactNumber}>{contact.number}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <View style={{ height: 40 }} />
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -159,43 +205,41 @@ export default function AlertDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     content: { paddingHorizontal: spacing.l, paddingVertical: spacing.l },
-    header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: spacing.l },
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: 24, fontWeight: '900', color: colors.foreground },
-    badge: { borderRadius: borderRadius.full, paddingHorizontal: 10, paddingVertical: 4 },
-    badgeText: { fontSize: 10, fontWeight: '700' },
-    warningBanner: { marginTop: spacing.l, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: borderRadius.lg, padding: 16 },
-    warningIcon: { width: 48, height: 48, borderRadius: borderRadius.md, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center' },
-    warningTitle: { fontSize: 14, fontWeight: '700', color: '#991B1B' },
-    warningSub: { fontSize: 12, color: '#DC2626' },
-    alertCard: { marginTop: 20, backgroundColor: colors.card, borderRadius: borderRadius.lg, overflow: 'hidden' },
-    alertCardRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16 },
-    alertIconBox: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
-    alertTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    alertType: { fontSize: 14, fontWeight: '700', color: colors.foreground },
-    sevPill: { borderRadius: borderRadius.full, paddingHorizontal: 8, paddingVertical: 2 },
-    sevPillText: { fontSize: 10, fontWeight: '700' },
-    alertMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-    alertMetaText: { fontSize: 12, color: colors.mutedForeground },
-    expandedSection: { borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 16, paddingBottom: 16, paddingTop: 12 },
-    descriptionText: { fontSize: 14, color: colors.mutedForeground, lineHeight: 20 },
-    expandedBtns: { flexDirection: 'row', gap: 8, marginTop: 12 },
-    getAfeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.primary, borderRadius: borderRadius.full, paddingVertical: 10 },
-    getSafeText: { fontSize: 12, fontWeight: '700', color: '#fff' },
-    detailsBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.secondary, borderRadius: borderRadius.full, paddingVertical: 10 },
-    detailsBtnText: { fontSize: 12, fontWeight: '700', color: colors.secondaryForeground },
-    actionsCard: { marginTop: 20, backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 20 },
-    actionsTitle: { fontSize: 16, fontWeight: '700', color: colors.foreground, marginBottom: 12 },
-    actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    actionText: { fontSize: 14, color: colors.mutedForeground, flex: 1, lineHeight: 22 },
-    safeBtn: { marginTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.card, borderWidth: 2, borderColor: colors.primary, borderRadius: borderRadius.full, paddingVertical: 16 },
+    headerTitle: { fontSize: 20, fontWeight: '800', color: colors.foreground },
+    flagBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+    flagText: { fontSize: 10, fontWeight: '900', color: '#fff', textTransform: 'uppercase' },
+
+    mainCard: { backgroundColor: colors.card, borderRadius: 24, overflow: 'hidden', borderWidth: 1 },
+    cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16 },
+    iconBox: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    cardTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground },
+    metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 6 },
+    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    metaText: { fontSize: 12, color: colors.mutedForeground },
+
+    cardBody: { padding: 16 },
+    description: { fontSize: 15, color: colors.foreground, lineHeight: 22 },
+    additionalInfoBox: { marginTop: 16, padding: 12, backgroundColor: colors.background, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: colors.primary },
+    additionalInfoTitle: { fontSize: 12, fontWeight: '700', color: colors.primary, marginBottom: 4 },
+    additionalInfoText: { fontSize: 13, color: colors.mutedForeground, lineHeight: 18 },
+
+    sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.foreground, marginTop: 24, marginBottom: 16 },
+    precautionsContainer: { gap: 12 },
+    precautionItem: { flexDirection: 'row', gap: 12, backgroundColor: colors.card, padding: 12, borderRadius: 16 },
+    precautionNum: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    precautionNumText: { fontSize: 14, fontWeight: '800' },
+    precautionText: { flex: 1, fontSize: 14, color: colors.foreground, lineHeight: 20 },
+
+    actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
+    actionButton: { width: (width - spacing.l * 2 - 24) / 3, alignItems: 'center', gap: 8 },
+    actionIconSurface: { width: 56, height: 56, borderRadius: 18, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+    actionButtonLabel: { fontSize: 11, fontWeight: '600', color: colors.mutedForeground, textAlign: 'center' },
+
+    safeBtn: { marginTop: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.card, borderWidth: 2, borderRadius: 20, paddingVertical: 18, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
     safeCheckmark: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
     safeCheckText: { fontSize: 12, fontWeight: '700', color: '#fff' },
-    safeBtnText: { fontSize: 16, fontWeight: '700', color: colors.primary },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.foreground, marginTop: 32, marginBottom: 12 },
-    contactsRow: { flexDirection: 'row', gap: 12, paddingBottom: 32 },
-    contactCard: { flex: 1, alignItems: 'center', gap: 8, backgroundColor: colors.card, borderRadius: borderRadius.lg, paddingVertical: 20 },
-    contactIcon: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
-    contactLabel: { fontSize: 12, fontWeight: '600', color: colors.foreground },
-    contactNumber: { fontSize: 10, color: colors.mutedForeground },
+    safeBtnText: { fontSize: 16, fontWeight: '800', color: colors.primary },
 });
+

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Constants from 'expo-constants';
 import {
     View, ScrollView, StyleSheet, TouchableOpacity, Switch, Linking,
-    Modal, Pressable,
+    Modal, Pressable, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Icon } from 'react-native-paper';
@@ -89,7 +89,11 @@ export default function SettingsScreen({ navigation }) {
                     {/* Profile Quick Card */}
                     <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('Profile')} activeOpacity={0.75}>
                         <View style={styles.profileAvatar}>
-                            <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
+                            {user?.profilePhoto ? (
+                                <Image source={{ uri: user.profilePhoto }} style={styles.avatarImage} />
+                            ) : (
+                                <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
+                            )}
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.profileName}>{user?.name || 'User'}</Text>
@@ -196,7 +200,8 @@ const styles = StyleSheet.create({
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
     headerTitle: { fontSize: 24, fontWeight: '900', color: colors.foreground, flex: 1 },
     profileCard: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: spacing.l, backgroundColor: colors.card, borderRadius: borderRadius.lg, padding: 16 },
-    profileAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+    profileAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+    avatarImage: { width: '100%', height: '100%' },
     avatarText: { fontSize: 18, fontWeight: '800', color: colors.primary },
     profileName: { fontSize: 16, fontWeight: '700', color: colors.foreground },
     profileEmail: { fontSize: 13, color: colors.mutedForeground },

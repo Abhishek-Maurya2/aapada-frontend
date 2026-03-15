@@ -8,9 +8,18 @@ import { Text, Icon, Snackbar } from 'react-native-paper';
 import { colors, spacing, borderRadius } from '../theme/colors';
 import useStore from '../store/useStore';
 import { useTranslation } from 'react-i18next';
+import { getPrecautionsForType } from '../data/alertPrecautions';
 
-const getSeverityColor = (severity) => {
-    switch (severity?.toUpperCase()) {
+const FLAG_COLORS = {
+    RED: '#EF4444',
+    ORANGE: '#F97316',
+    YELLOW: '#EAB308',
+    GREEN: '#22C55E'
+};
+
+const getAlertColor = (alert) => {
+    if (alert.flag && FLAG_COLORS[alert.flag]) return FLAG_COLORS[alert.flag];
+    switch (alert.severity?.toUpperCase()) {
         case 'CRITICAL': return '#dc2626';
         case 'HIGH': return '#3b82f6';
         case 'MEDIUM': return '#f59e0b';
@@ -18,8 +27,11 @@ const getSeverityColor = (severity) => {
     }
 };
 
-const getSeverityIcon = (severity) => {
-    switch (severity?.toUpperCase()) {
+const getAlertIcon = (alert) => {
+    const disasterData = getPrecautionsForType(alert.alertType);
+    if (disasterData && disasterData.icon) return disasterData.icon;
+
+    switch (alert.severity?.toUpperCase()) {
         case 'CRITICAL': return 'flash-alert';
         case 'HIGH': return 'waves';
         case 'MEDIUM': return 'weather-windy';
@@ -171,7 +183,7 @@ export default function HomeScreen({ navigation }) {
                     <View style={{ gap: 12, paddingBottom: 80 }}>
                         {alerts.length > 0 ? (
                             alerts.map((alert) => {
-                                const alertColor = getSeverityColor(alert.severity);
+                                const alertColor = getAlertColor(alert);
                                 return (
                                     <TouchableOpacity
                                         key={alert.id}
@@ -180,10 +192,15 @@ export default function HomeScreen({ navigation }) {
                                         activeOpacity={0.75}
                                     >
                                         <View style={[styles.alertIconBox, { backgroundColor: alertColor + '20' }]}>
-                                            <Icon source={getSeverityIcon(alert.severity)} size={22} color={alertColor} />
+                                            <Icon source={getAlertIcon(alert)} size={22} color={alertColor} />
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.alertType}>{alert.title}</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                {alert.flag && (
+                                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: FLAG_COLORS[alert.flag] }} />
+                                                )}
+                                                <Text style={styles.alertType}>{alert.title}</Text>
+                                            </View>
                                             <View style={styles.alertMeta}>
                                                 <Icon source="map-marker" size={12} color={colors.mutedForeground} />
                                                 <Text style={styles.alertMetaText}>

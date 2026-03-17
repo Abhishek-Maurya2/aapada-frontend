@@ -15,13 +15,13 @@ export default function SignupScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const login = useStore((state) => state.login);
+    const signup = useStore((state) => state.signup);
     const loading = useStore((state) => state.loading);
     const error = useStore((state) => state.error);
 
     const handleSignup = async () => {
         if (!name || !email || !password) return;
-        const success = await login(email, password, name);
+        const success = await signup(name, email, password);
         if (success) {
             navigation.replace('Home');
         }

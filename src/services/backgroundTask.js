@@ -37,7 +37,7 @@ async function checkForNewAlerts() {
       const stored = await storage.getItem('aapada-storage');
       if (stored) {
         const parsed = JSON.parse(stored);
-        deviceId = parsed?.state?.user?.id;
+        deviceId = parsed?.state?.deviceId || parsed?.state?.user?.id;
       }
     } catch (e) {
       console.log('Could not read stored user:', e.message);

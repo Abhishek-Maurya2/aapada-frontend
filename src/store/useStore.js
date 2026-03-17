@@ -13,6 +13,7 @@ const useStore = create(
     persist(
         (set, get) => ({
             user: null,
+            deviceId: null,
             isAuthenticated: false,
             alerts: [],
             respondedAlertIds: [], // Track alerts user has responded to
@@ -21,10 +22,15 @@ const useStore = create(
             error: null,
 
             // Actions
-            login: async (email, password, name, phone) => {
+            signup: async (name, email, password, phone = '') => {
                 set({ loading: true, error: null });
                 try {
-                    const deviceId = generateDeviceId();
+                    let deviceId = get().deviceId;
+                    if (!deviceId) {
+                        deviceId = generateDeviceId();
+                        set({ deviceId });
+                    }
+
                     const fcmToken = 'dummy-fcm-token-' + Date.now();
 
                     // Location logic
@@ -46,28 +52,102 @@ const useStore = create(
                         console.error('Failed to get location:', locErr);
                     }
 
-                    const response = await api.post('/devices/register', {
+                    const response = await api.post('/auth/signup', {
+                        name,
+                        email,
+                        password,
+                        phone,
                         deviceId,
                         fcmToken,
                         platform: 'android',
                         location: locationCoords,
-                        name: name || email.split('@')[0],
-                        email: email,
-                        phone: phone || ''
                     });
 
                     if (response.data.success) {
+                        const userData = response.data.data.user;
                         const user = {
-                            id: response.data.data.deviceId,
-                            name: response.data.data.name || name || email.split('@')[0],
-                            email: response.data.data.email || email,
-                            phone: response.data.data.phone || phone || '',
-                            profilePhoto: response.data.data.profilePhoto || null,
+                            id: userData.id,
+                            name: userData.name,
+                            email: userData.email,
+                            phone: userData.phone || '',
+                            profilePhoto: userData.profilePhoto || null,
                         };
-                        set({ user, isAuthenticated: true, loading: false, respondedAlertIds: [] });
+                        set({
+                            user,
+                            deviceId: response.data.data.device?.deviceId || deviceId,
+                            isAuthenticated: true,
+                            loading: false,
+                            respondedAlertIds: [],
+                        });
                         return true;
                     } else {
-                        throw new Error(response.data.message || 'Registration failed');
+                        throw new Error(response.data.message || 'Signup failed');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    set({ error: err.response?.data?.message || err.message || 'Signup failed', loading: false });
+                    return false;
+                }
+            },
+
+            login: async (email, password) => {
+                set({ loading: true, error: null });
+                try {
+                    let deviceId = get().deviceId;
+                    if (!deviceId) {
+                        deviceId = generateDeviceId();
+                        set({ deviceId });
+                    }
+
+                    const fcmToken = 'dummy-fcm-token-' + Date.now();
+
+                    // Location logic
+                    let locationCoords = { type: 'Point', coordinates: [0, 0] }; // fallback
+                    try {
+                        let { status } = await Location.requestForegroundPermissionsAsync();
+                        if (status === 'granted') {
+                            let location = await Location.getCurrentPositionAsync({});
+                            locationCoords = {
+                                type: 'Point',
+                                // Note: longitude first for MongoDB
+                                coordinates: [location.coords.longitude, location.coords.latitude]
+                            };
+                            console.log('Location fetched:', locationCoords);
+                        } else {
+                            console.warn('Location permission denied, using default [0,0]');
+                        }
+                    } catch (locErr) {
+                        console.error('Failed to get location:', locErr);
+                    }
+
+                    const response = await api.post('/auth/login', {
+                        email,
+                        password,
+                        deviceId,
+                        fcmToken,
+                        platform: 'android',
+                        location: locationCoords,
+                    });
+
+                    if (response.data.success) {
+                        const userData = response.data.data.user;
+                        const user = {
+                            id: userData.id,
+                            name: userData.name,
+                            email: userData.email,
+                            phone: userData.phone || '',
+                            profilePhoto: userData.profilePhoto || null,
+                        };
+                        set({
+                            user,
+                            deviceId: response.data.data.device?.deviceId || deviceId,
+                            isAuthenticated: true,
+                            loading: false,
+                            respondedAlertIds: [],
+                        });
+                        return true;
+                    } else {
+                        throw new Error(response.data.message || 'Login failed');
                     }
                 } catch (err) {
                     console.error(err);
@@ -84,7 +164,7 @@ const useStore = create(
                     const { user } = get();
                     if (!user?.id) throw new Error('Not logged in');
 
-                    const response = await api.put(`/devices/${user.id}/profile`, {
+                    const response = await api.put(`/users/${user.id}/profile`, {
                         name,
                         email,
                         phone,
@@ -116,8 +196,8 @@ const useStore = create(
             // Update device location on the server
             updateLocation: async () => {
                 try {
-                    const { user } = get();
-                    if (!user?.id) return;
+                    const { deviceId } = get();
+                    if (!deviceId) return;
 
                     let { status } = await Location.getForegroundPermissionsAsync();
                     if (status !== 'granted') {
@@ -130,7 +210,7 @@ const useStore = create(
                         accuracy: Location.Accuracy.Balanced,
                     });
 
-                    await api.put(`/devices/${user.id}/location`, {
+                    await api.put(`/devices/${deviceId}/location`, {
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
                     });
@@ -144,14 +224,14 @@ const useStore = create(
                     set({ loading: true, error: null });
                 }
                 try {
-                    const { user, respondedAlertIds, lastSeenAlertId } = get();
+                    const { deviceId, respondedAlertIds, lastSeenAlertId } = get();
 
                     // Update location before fetching so backend has fresh coordinates
                     await get().updateLocation();
 
                     // Use device-aware endpoint for geofence-filtered alerts
-                    const endpoint = user?.id
-                        ? `/alerts/device/${user.id}`
+                    const endpoint = deviceId
+                        ? `/alerts/device/${deviceId}`
                         : '/alerts';
                     const response = await api.get(endpoint);
 
@@ -211,12 +291,12 @@ const useStore = create(
 
             acknowledgeAlert: async (alertId) => {
                 try {
-                    const { user } = get();
-                    if (!user?.id) return;
+                    const { deviceId } = get();
+                    if (!deviceId) return;
 
                     await api.post('/alerts/feedback', {
                         alertId,
-                        deviceId: user.id,
+                        deviceId,
                         status: 'ACKNOWLEDGED',
                         metadata: { timestamp: new Date() }
                     });
@@ -234,12 +314,12 @@ const useStore = create(
             // Send feedback with action type (MEDICAL, FIRE, SAFE, HELP)
             sendFeedback: async (alertId, actionType) => {
                 try {
-                    const { user } = get();
-                    if (!user?.id) return false;
+                    const { deviceId } = get();
+                    if (!deviceId) return false;
 
                     await api.post('/alerts/feedback', {
                         alertId,
-                        deviceId: user.id,
+                        deviceId,
                         status: actionType,
                         metadata: {
                             timestamp: new Date(),
@@ -266,6 +346,7 @@ const useStore = create(
             // Persist auth state and responded alerts
             partialize: (state) => ({
                 user: state.user,
+                deviceId: state.deviceId,
                 isAuthenticated: state.isAuthenticated,
                 respondedAlertIds: state.respondedAlertIds
             }),

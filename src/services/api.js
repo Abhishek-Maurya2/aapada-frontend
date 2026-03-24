@@ -7,9 +7,7 @@ import { Platform } from 'react-native';
 // 2. Android Emulator: Use 10.0.2.2
 // 3. Physical Device: Use computer's IP
 
-const API_URL = Platform.OS === 'web'
-    ? 'https://aapada-backend.onrender.com/api/v1'
-    : 'https://aapada-backend.onrender.com/api/v1';
+const API_URL = 'https://aapada-backend.onrender.com/api/v1';
 
 
 // const API_URL = Platform.OS === 'web'

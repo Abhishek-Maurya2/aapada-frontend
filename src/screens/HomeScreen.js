@@ -119,15 +119,15 @@ export default function HomeScreen({ navigation }) {
         dos: dos.length
           ? dos
           : [
-              "Keep emergency contacts ready.",
-              "Move to safer ground if advised.",
-            ],
+            "Keep emergency contacts ready.",
+            "Move to safer ground if advised.",
+          ],
         donts: donts.length
           ? donts
           : [
-              "Don't panic or spread misinformation.",
-              "Don't ignore official advisories.",
-            ],
+            "Don't panic or spread misinformation.",
+            "Don't ignore official advisories.",
+          ],
       };
     });
   }, [alerts]);
@@ -326,87 +326,88 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t("home.recentAlerts")}</Text>
             <TouchableOpacity
+              style={{ backgroundColor: colors.accent, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 }}
               onPress={() => navigation.navigate("AlertHistory")}
             >
               <Text style={styles.viewAllText}>{t("common.seeAll")}</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ gap: 12, paddingBottom: 80 }}>
+          <View style={{ gap: 8, paddingBottom: 80 }}>
             {alerts.length > 0
               ? alerts.map((alert) => {
-                  const alertColor = getAlertColor(alert);
-                  return (
-                    <TouchableOpacity
-                      key={alert.id}
-                      style={styles.alertCard}
-                      onPress={() => handleAlertPress(alert)}
-                      activeOpacity={0.75}
+                const alertColor = getAlertColor(alert);
+                return (
+                  <TouchableOpacity
+                    key={alert.id}
+                    style={styles.alertCard}
+                    onPress={() => handleAlertPress(alert)}
+                    activeOpacity={0.75}
+                  >
+                    <View
+                      style={[
+                        styles.alertIconBox,
+                        { backgroundColor: alertColor + "20" },
+                      ]}
                     >
-                      <View
-                        style={[
-                          styles.alertIconBox,
-                          { backgroundColor: alertColor + "20" },
-                        ]}
-                      >
-                        <Icon
-                          source={getAlertIcon(alert)}
-                          size={22}
-                          color={alertColor}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          {alert.flag && (
-                            <View
-                              style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 4,
-                                backgroundColor: FLAG_COLORS[alert.flag],
-                              }}
-                            />
-                          )}
-                          <Text style={styles.alertType}>{alert.title}</Text>
-                        </View>
-                        <View style={styles.alertMeta}>
-                          <Icon
-                            source="map-marker"
-                            size={12}
-                            color={colors.mutedForeground}
-                          />
-                          <Text style={styles.alertMetaText}>
-                            {alert.location || t("home.allAreas")} ·{" "}
-                            {alert.time}
-                          </Text>
-                        </View>
-                      </View>
                       <Icon
-                        source="chevron-right"
-                        size={18}
-                        color={colors.mutedForeground}
+                        source={getAlertIcon(alert)}
+                        size={38}
+                        color={alertColor}
                       />
-                    </TouchableOpacity>
-                  );
-                })
-              : !loading && (
-                  <View style={styles.emptyState}>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        {alert.flag && (
+                          <View
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: 4,
+                              backgroundColor: FLAG_COLORS[alert.flag],
+                            }}
+                          />
+                        )}
+                        <Text style={styles.alertType}>{alert.title}</Text>
+                      </View>
+                      <View style={styles.alertMeta}>
+                        <Icon
+                          source="map-marker"
+                          size={12}
+                          color={colors.mutedForeground}
+                        />
+                        <Text style={styles.alertMetaText}>
+                          {alert.location || t("home.allAreas")} ·{" "}
+                          {alert.time}
+                        </Text>
+                      </View>
+                    </View>
                     <Icon
-                      source="check-decagram"
-                      size={48}
-                      color={colors.success}
+                      source="chevron-right"
+                      size={28}
+                      color={colors.mutedForeground}
                     />
-                    <Text style={styles.emptyTitle}>{t("home.noAlerts")}</Text>
-                    <Text style={styles.emptyText}>
-                      {t("home.noAlertsDesc")}
-                    </Text>
-                  </View>
-                )}
+                  </TouchableOpacity>
+                );
+              })
+              : !loading && (
+                <View style={styles.emptyState}>
+                  <Icon
+                    source="check-decagram"
+                    size={48}
+                    color={colors.success}
+                  />
+                  <Text style={styles.emptyTitle}>{t("home.noAlerts")}</Text>
+                  <Text style={styles.emptyText}>
+                    {t("home.noAlertsDesc")}
+                  </Text>
+                </View>
+              )}
           </View>
         </View>
       </ScrollView>
@@ -610,13 +611,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: 16,
+    borderRadius: borderRadius.full,
+    padding: 12,
   },
   alertIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+    width: 50,
+    height: 50,
+    borderRadius: borderRadius.full,
     alignItems: "center",
     justifyContent: "center",
   },

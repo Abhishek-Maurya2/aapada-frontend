@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
     View,
     ScrollView,
     StyleSheet,
     Animated,
     Dimensions,
-    StatusBar as RNStatusBar,
+    StatusBar,
+    Platform,
+    TouchableOpacity,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
     Text,
     Button,
@@ -18,9 +21,9 @@ import {
 } from 'react-native-paper';
 import { colors } from '../theme/colors';
 import useStore from '../store/useStore';
-import { getPrecautionsForType } from '../data/alertPrecautions';
+import { getPrecautionsForAlert } from '../data/alertPrecautions';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // M3 Expressive color tokens per severity
 const FLAG_COLORS = {
@@ -37,15 +40,7 @@ const FLAG_LIGHT_COLORS = {
     GREEN: '#C4EECD'
 };
 
-const FLAG_HEADER_COLORS = {
-    RED: '#FFB4AB',
-    ORANGE: '#FFB59E',
-    YELLOW: '#FFDF9B',
-    GREEN: '#A7D8B3'
-};
-
 const getSeverityTheme = (severity, flag) => {
-    // Priority to Flag if it exists
     if (flag && FLAG_COLORS[flag]) {
         return {
             container: FLAG_LIGHT_COLORS[flag],
@@ -57,23 +52,21 @@ const getSeverityTheme = (severity, flag) => {
             badgeText: '#FFFFFF',
             icon: 'alert-decagram',
             label: flag,
-            headerBg: FLAG_HEADER_COLORS[flag],
         };
     }
 
     switch (severity?.toUpperCase()) {
         case 'CRITICAL':
             return {
-                container: '#FFDAD6',       // errorContainer
-                onContainer: '#410002',      // onErrorContainer
-                accent: '#BA1A1A',           // error
+                container: '#FFDAD6',
+                onContainer: '#410002',
+                accent: '#BA1A1A',
                 onAccent: '#FFFFFF',
-                surface: '#FFF8F7',          // surface
+                surface: '#FFF8F7',
                 badge: '#BA1A1A',
                 badgeText: '#FFFFFF',
                 icon: 'alert-octagon',
                 label: 'CRITICAL',
-                headerBg: '#FFB4AB',
             };
         case 'HIGH':
             return {
@@ -86,7 +79,6 @@ const getSeverityTheme = (severity, flag) => {
                 badgeText: '#FFFFFF',
                 icon: 'alert',
                 label: 'HIGH',
-                headerBg: '#FFB59E',
             };
         case 'MEDIUM':
             return {
@@ -99,7 +91,6 @@ const getSeverityTheme = (severity, flag) => {
                 badgeText: '#FFFFFF',
                 icon: 'alert-circle',
                 label: 'MEDIUM',
-                headerBg: '#FFDF9B',
             };
         default:
             return {
@@ -112,7 +103,6 @@ const getSeverityTheme = (severity, flag) => {
                 badgeText: '#FFFFFF',
                 icon: 'information',
                 label: 'ADVISORY',
-                headerBg: '#A7D8B3',
             };
     }
 };
@@ -121,68 +111,66 @@ export default function EmergencyAlertScreen({ route, navigation }) {
     const { alert } = route.params;
     const { sendFeedback, dismissAlarm } = useStore();
     const theme = getSeverityTheme(alert.severity, alert.flag);
-    const alertData = getPrecautionsForType(alert.alertType || 'Other');
+    const alertData = getPrecautionsForAlert(alert);
+
+    // Hiding status bar for full-screen takeover
+    useFocusEffect(
+        useCallback(() => {
+            StatusBar.setHidden(true, 'fade');
+            return () => StatusBar.setHidden(false, 'fade');
+        }, [])
+    );
 
     const getDisplayLocation = () => {
         const loc = alert.location || alert.targetRegion;
         if (!loc) return 'All Areas';
         if (typeof loc === 'string') return loc;
         if (typeof loc === 'object' && loc.type === 'Point') {
-            return `Geofenced Area (${loc.radius}m)`;
+            return `Radius of (${loc.radius}m)`;
         }
         return 'All Areas';
     };
 
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(40)).current;
+    const slideAnim = useRef(new Animated.Value(60)).current;
     const iconBounce = useRef(new Animated.Value(0)).current;
     const pulseAnim = useRef(new Animated.Value(1)).current;
-    const buttonsAnim = useRef(new Animated.Value(60)).current;
+    const buttonsAnim = useRef(new Animated.Value(100)).current;
 
     useEffect(() => {
-        // Entrance animations
-        Animated.stagger(100, [
+        Animated.stagger(120, [
             Animated.parallel([
                 Animated.timing(fadeAnim, {
                     toValue: 1,
-                    duration: 350,
+                    duration: 400,
                     useNativeDriver: true,
                 }),
                 Animated.spring(slideAnim, {
                     toValue: 0,
-                    tension: 65,
-                    friction: 9,
+                    tension: 50,
+                    friction: 8,
                     useNativeDriver: true,
                 }),
             ]),
             Animated.spring(iconBounce, {
                 toValue: 1,
                 tension: 80,
-                friction: 5,
+                friction: 6,
                 useNativeDriver: true,
             }),
             Animated.spring(buttonsAnim, {
                 toValue: 0,
-                tension: 50,
-                friction: 9,
+                tension: 40,
+                friction: 8,
                 useNativeDriver: true,
             }),
         ]).start();
 
-        // Pulsating icon
         const pulse = Animated.loop(
             Animated.sequence([
-                Animated.timing(pulseAnim, {
-                    toValue: 1.08,
-                    duration: 900,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(pulseAnim, {
-                    toValue: 1,
-                    duration: 900,
-                    useNativeDriver: true,
-                }),
+                Animated.timing(pulseAnim, { toValue: 1.1, duration: 800, useNativeDriver: true }),
+                Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
             ])
         );
         pulse.start();
@@ -201,50 +189,48 @@ export default function EmergencyAlertScreen({ route, navigation }) {
     };
 
     return (
-        <View style={[styles.root, { backgroundColor: theme.surface }]}>
-            <RNStatusBar barStyle="dark-content" backgroundColor={theme.headerBg} />
-
-            {/* Header area with expressive color */}
-            <View style={[styles.header, { backgroundColor: theme.headerBg }]}>
-                {/* Close button */}
-                <IconButton
-                    icon="close"
-                    iconColor={theme.onContainer}
-                    size={24}
-                    onPress={handleDismiss}
-                    style={styles.closeBtn}
-                    mode="contained-tonal"
+        <View style={[styles.root, { backgroundColor: theme.accent }]}>
+            {/* Immersive Header Backdrop */}
+            <View style={styles.immersiveBackdrop}>
+                <Animated.View
+                    style={[
+                        styles.pulseRing,
+                        {
+                            transform: [{ scale: pulseAnim }],
+                            borderColor: 'rgba(255,255,255,0.2)'
+                        }
+                    ]}
                 />
-
-                {/* Animated icon */}
                 <Animated.View
                     style={[
                         styles.iconCircle,
                         {
-                            backgroundColor: theme.accent,
-                            transform: [
-                                { scale: Animated.multiply(iconBounce, pulseAnim) },
-                            ],
+                            transform: [{ scale: iconBounce }],
                         },
                     ]}
                 >
-                    <Icon source={alertData.icon || theme.icon} size={48} color={theme.onAccent} />
+                    <Icon source={alertData.icon || theme.icon} size={84} color="#FFFFFF" />
                 </Animated.View>
 
-                {/* Severity chip */}
-                <Chip
-                    style={[styles.severityChip, { backgroundColor: theme.badge }]}
-                    textStyle={[styles.severityChipText, { color: theme.badgeText }]}
-                    compact
-                >
-                    {theme.label}
-                </Chip>
+                <Animated.View style={{ opacity: fadeAnim }}>
+                    <Chip
+                        style={[styles.severityChip, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+                        textStyle={styles.severityChipText}
+                    >
+                        {theme.label}
+                    </Chip>
+                </Animated.View>
             </View>
 
-            {/* Content */}
+            {/* Floating Action Button (Close) */}
+            {/* <TouchableOpacity style={styles.closeOverlay} onPress={handleDismiss}>
+                <Icon source="close" size={28} color="#FFFFFF" />
+            </TouchableOpacity> */}
+
+            {/* Content Bottom Sheet */}
             <Animated.View
                 style={[
-                    styles.contentWrapper,
+                    styles.contentSheet,
                     {
                         opacity: fadeAnim,
                         transform: [{ translateY: slideAnim }],
@@ -255,122 +241,80 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-                    {/* Title */}
-                    <Text
-                        variant="headlineMedium"
-                        style={[styles.title, { color: theme.onContainer }]}
-                    >
+                    <Text variant="headlineMedium" style={[styles.title, { color: '#000' }]}>
                         {alert.title}
                     </Text>
 
-                    {/* Info pills row */}
-                    <View style={styles.pillsRow}>
-                        <Surface
-                            style={[styles.infoPill, { backgroundColor: theme.container }]}
-                            elevation={0}
-                        >
-                            <Icon source="map-marker" size={18} color={theme.accent} />
-                            <Text
-                                variant="labelLarge"
-                                style={{ color: theme.onContainer, marginLeft: 6 }}
-                            >
+                    <View style={styles.metaRow}>
+                        <Surface style={[styles.metaPill, { backgroundColor: theme.container }]} elevation={0}>
+                            <Icon source="map-marker" size={16} color={theme.accent} />
+                            <Text variant="labelLarge" style={{ color: theme.onContainer, marginLeft: 6 }}>
                                 {getDisplayLocation()}
                             </Text>
                         </Surface>
-                        <Surface
-                            style={[styles.infoPill, { backgroundColor: theme.container }]}
-                            elevation={0}
-                        >
-                            <Icon source="clock-outline" size={18} color={theme.accent} />
-                            <Text
-                                variant="labelLarge"
-                                style={{ color: theme.onContainer, marginLeft: 6 }}
-                            >
+                        <Surface style={[styles.metaPill, { backgroundColor: theme.container }]} elevation={0}>
+                            <Icon source="clock-outline" size={16} color={theme.accent} />
+                            <Text variant="labelLarge" style={{ color: theme.onContainer, marginLeft: 6 }}>
                                 {alert.time}
                             </Text>
                         </Surface>
                     </View>
 
-                    {/* Description card */}
-                    <Surface style={[styles.card, { backgroundColor: theme.container }]} elevation={0}>
-                        <Text variant="titleMedium" style={[styles.cardTitle, { color: theme.accent }]}>
-                            Description
+                    <Surface style={styles.descriptionCard} elevation={0}>
+                        <Text variant="titleSmall" style={{ color: theme.accent, fontWeight: '800', marginBottom: 6 }}>
+                            INCIDENT UPDATE
                         </Text>
-                        <Text variant="bodyLarge" style={{ color: theme.onContainer, lineHeight: 24 }}>
+                        <Text variant="bodyLarge" style={{ color: '#334155', lineHeight: 24 }}>
                             {alert.description}
                         </Text>
                     </Surface>
 
-                    {/* Instructions card */}
-                    <Surface style={[styles.card, { backgroundColor: colors.card }]} elevation={0}>
-                        <Text variant="titleMedium" style={[styles.cardTitle, { color: colors.foreground }]}>
-                            Immediate Actions
-                        </Text>
-                        {alertData.precautions.slice(0, 3).map((text, idx) => (
-                            <View key={idx} style={styles.instructionRow}>
-                                <Icon source="shield-check" size={20} color={theme.accent} />
-                                <Text variant="bodyMedium" style={styles.instructionText}>
-                                    {text}
-                                </Text>
+                    <Text style={styles.sectionTitle}>IMMEDIATE PROTOCOLS</Text>
+                    {alertData.precautions.slice(0, 4).map((text, idx) => (
+                        <View key={idx} style={styles.instructionRow}>
+                            <View style={[styles.indexDot, { backgroundColor: theme.container }]}>
+                                <Text style={{ color: theme.accent, fontWeight: '900', fontSize: 12 }}>{idx + 1}</Text>
                             </View>
-                        ))}
-                    </Surface>
+                            <Text variant="bodyMedium" style={styles.instructionText}>
+                                {text}
+                            </Text>
+                        </View>
+                    ))}
                 </ScrollView>
             </Animated.View>
 
-            {/* Action buttons */}
+            {/* Response Bar */}
             <Animated.View
                 style={[
-                    styles.actionBar,
+                    styles.responseBar,
                     {
                         transform: [{ translateY: buttonsAnim }],
                         opacity: fadeAnim,
                     },
                 ]}
             >
-                <Button
-                    mode="contained"
-                    icon="check-circle"
+                <TouchableOpacity
+                    style={[styles.primarySafeBtn, { backgroundColor: '#006D3A' }]}
                     onPress={() => handleResponse('SAFE')}
-                    buttonColor="#006D3A"
-                    textColor="#FFFFFF"
-                    contentStyle={styles.primaryBtnContent}
-                    labelStyle={styles.primaryBtnLabel}
-                    style={styles.primaryBtn}
                 >
-                    I'm Safe
-                </Button>
-                <View style={styles.secondaryRow}>
-                    <Button
-                        mode="outlined"
-                        icon="hospital-box"
+                    <Text style={styles.primarySafeText}>I AM SAFE / RESPOND</Text>
+                </TouchableOpacity>
+
+                <View style={styles.secondaryActions}>
+                    <TouchableOpacity
+                        style={[styles.smallActionBtn, { borderColor: '#BA1A1A' }]}
                         onPress={() => handleResponse('MEDICAL')}
-                        textColor="#BA1A1A"
-                        style={[styles.secondaryBtn, { borderColor: '#BA1A1A' }]}
-                        labelStyle={styles.secondaryBtnLabel}
                     >
-                        Medical
-                    </Button>
-                    <Button
-                        mode="outlined"
-                        icon="fire"
-                        onPress={() => handleResponse('FIRE')}
-                        textColor="#C4441C"
-                        style={[styles.secondaryBtn, { borderColor: '#C4441C' }]}
-                        labelStyle={styles.secondaryBtnLabel}
-                    >
-                        Fire
-                    </Button>
-                    <Button
-                        mode="outlined"
-                        icon="hand-wave"
+                        <Icon source="hospital-box" size={20} color="#BA1A1A" />
+                        <Text style={[styles.smallActionText, { color: '#BA1A1A' }]}>MEDICAL</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.smallActionBtn, { borderColor: colors.primary }]}
                         onPress={() => handleResponse('HELP')}
-                        textColor={colors.primary}
-                        style={[styles.secondaryBtn, { borderColor: colors.primary }]}
-                        labelStyle={styles.secondaryBtnLabel}
                     >
-                        Help
-                    </Button>
+                        <Icon source="hand-wave" size={20} color={colors.primary} />
+                        <Text style={[styles.smallActionText, { color: colors.primary }]}>SOS HELP</Text>
+                    </TouchableOpacity>
                 </View>
             </Animated.View>
         </View>
@@ -381,111 +325,161 @@ const styles = StyleSheet.create({
     root: {
         flex: 1,
     },
-    header: {
+    immersiveBackdrop: {
+        height: height * 0.45,
         alignItems: 'center',
-        paddingTop: (RNStatusBar.currentHeight || 44) + 8,
-        paddingBottom: 28,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
+        justifyContent: 'center',
+        paddingTop: 40,
     },
-    closeBtn: {
+    pulseRing: {
         position: 'absolute',
-        top: (RNStatusBar.currentHeight || 44) + 4,
-        right: 8,
-        zIndex: 10,
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+        borderWidth: 3,
     },
     iconCircle: {
-        width: 96,
-        height: 96,
-        borderRadius: 48,
+        width: 110,
+        height: 110,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 14,
-        elevation: 6,
+        marginBottom: 16,
     },
     severityChip: {
-        borderRadius: 20,
+        borderRadius: 8,
+        paddingHorizontal: 4,
     },
     severityChipText: {
-        fontWeight: '800',
+        fontWeight: '900',
         letterSpacing: 2,
-        fontSize: 12,
+        fontSize: 11,
+        color: '#FFFFFF',
     },
-    contentWrapper: {
-        flex: 1,
-    },
-    scrollContent: {
-        padding: 20,
-        paddingBottom: 16,
-    },
-    title: {
-        fontWeight: '800',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    pillsRow: {
-        flexDirection: 'row',
-        gap: 10,
-        marginBottom: 16,
-    },
-    infoPill: {
-        flex: 1,
-        flexDirection: 'row',
+    closeOverlay: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        zIndex: 100,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(0,0,0,0.3)',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        borderRadius: 16,
     },
-    card: {
+    contentSheet: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+        marginTop: -40,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+        elevation: 24,
+    },
+    scrollContent: {
+        padding: 24,
+        paddingBottom: 140,
+    },
+    title: {
+        fontWeight: '900',
+        textAlign: 'center',
+        marginBottom: 15,
+        lineHeight: 32,
+    },
+    metaRow: {
+        flexDirection: 'row',
+        gap: 6,
+        marginBottom: 15,
+        justifyContent: 'center',
+    },
+    metaPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 52,
+    },
+    descriptionCard: {
+        backgroundColor: '#F1F5F9',
         borderRadius: 20,
         padding: 20,
-        marginBottom: 12,
+        marginBottom: 28,
     },
-    cardTitle: {
-        fontWeight: '700',
-        marginBottom: 8,
+    sectionTitle: {
+        fontSize: 12,
+        fontWeight: '900',
+        color: '#94A3B8',
+        letterSpacing: 1.5,
+        marginBottom: 16,
     },
     instructionRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
-        marginBottom: 10,
+        gap: 14,
+        marginBottom: 16,
+    },
+    indexDot: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     instructionText: {
-        color: colors.mutedForeground,
+        color: '#475569',
         flex: 1,
         lineHeight: 22,
+        fontWeight: '500',
     },
-    actionBar: {
-        paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 32,
-        backgroundColor: colors.background,
+    responseBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 20,
+        paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+        backgroundColor: 'rgba(255,255,255,0.95)',
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: '#F1F5F9',
     },
-    primaryBtn: {
-        borderRadius: 20,
-        marginBottom: 10,
+    primarySafeBtn: {
+        height: 60,
+        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+        shadowColor: '#006D3A',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 8,
     },
-    primaryBtnContent: {
-        paddingVertical: 8,
-    },
-    primaryBtnLabel: {
+    primarySafeText: {
+        color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '900',
+        letterSpacing: 1,
     },
-    secondaryRow: {
+    secondaryActions: {
         flexDirection: 'row',
         gap: 8,
     },
-    secondaryBtn: {
+    smallActionBtn: {
         flex: 1,
-        borderRadius: 16,
+        height: 50,
+        borderRadius: 56,
+        borderWidth: 1.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 6,
     },
-    secondaryBtnLabel: {
-        fontSize: 11,
-        fontWeight: '600',
+    smallActionText: {
+        fontSize: 14,
+        fontWeight: '900',
     },
 });
+

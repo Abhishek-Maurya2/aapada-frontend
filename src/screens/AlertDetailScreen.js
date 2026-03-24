@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Icon, Surface } from 'react-native-paper';
 import { colors, spacing, borderRadius } from '../theme/colors';
 import { useTranslation } from 'react-i18next';
-import { getPrecautionsForType } from '../data/alertPrecautions';
+import { getPrecautionsForAlert } from '../data/alertPrecautions';
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +28,7 @@ export default function AlertDetailScreen({ route, navigation }) {
     const { t } = useTranslation();
     const { alert } = route.params;
     const sevConfig = SEVERITY_CONFIG[alert.severity?.toUpperCase()] || SEVERITY_CONFIG.LOW;
-    const alertData = getPrecautionsForType(alert.alertType || 'Other');
+    const alertData = getPrecautionsForAlert(alert);
 
     const [timeLeft, setTimeLeft] = useState('');
     const [expanded, setExpanded] = useState(true);

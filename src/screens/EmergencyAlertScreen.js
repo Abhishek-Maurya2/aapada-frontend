@@ -8,6 +8,8 @@ import {
     StatusBar,
     Platform,
     TouchableOpacity,
+    Image,
+    FlatList
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -20,6 +22,7 @@ import {
     IconButton,
 } from 'react-native-paper';
 import { colors } from '../theme/colors';
+import { useTranslation } from 'react-i18next';
 import useStore from '../store/useStore';
 import { getPrecautionsForAlert } from '../data/alertPrecautions';
 
@@ -38,6 +41,14 @@ const FLAG_LIGHT_COLORS = {
     ORANGE: '#FFDBCF',
     YELLOW: '#FFDEA9',
     GREEN: '#C4EECD'
+};
+
+const ILLUSTRATIONS = {
+    earthquake_drop: require('../../assets/illustrations/earthquake_drop.png'),
+    flood_high_ground: require('../../assets/illustrations/flood_high_ground.png'),
+    fire_crawl: require('../../assets/illustrations/fire_crawl.png'),
+    cyclone_indoor: require('../../assets/illustrations/cyclone_indoor.png'),
+    tsunami_run: require('../../assets/illustrations/tsunami_run.png'),
 };
 
 const getSeverityTheme = (severity, flag) => {
@@ -109,6 +120,7 @@ const getSeverityTheme = (severity, flag) => {
 
 export default function EmergencyAlertScreen({ route, navigation }) {
     const { alert } = route.params;
+    const { t } = useTranslation();
     const { sendFeedback, dismissAlarm } = useStore();
     const theme = getSeverityTheme(alert.severity, alert.flag);
     const alertData = getPrecautionsForAlert(alert);
@@ -123,13 +135,49 @@ export default function EmergencyAlertScreen({ route, navigation }) {
 
     const getDisplayLocation = () => {
         const loc = alert.location || alert.targetRegion;
-        if (!loc) return 'All Areas';
+        if (!loc) return t('home.allAreas');
         if (typeof loc === 'string') return loc;
         if (typeof loc === 'object' && loc.type === 'Point') {
             return `Radius of (${loc.radius}m)`;
         }
-        return 'All Areas';
+        return t('home.allAreas');
     };
+
+    const flatListRef = useRef(null);
+    const [activeIntervalIndex, setActiveIntervalIndex] = React.useState(0);
+
+    useEffect(() => {
+        if (alertData.precautions.length <= 1) return;
+        
+        const interval = setInterval(() => {
+            const nextIndex = (activeIntervalIndex + 1) % alertData.precautions.length;
+            flatListRef.current?.scrollToIndex({ 
+                index: nextIndex, 
+                animated: true 
+            });
+            setActiveIntervalIndex(nextIndex);
+        }, 5000);
+        
+        return () => clearInterval(interval);
+    }, [activeIntervalIndex, alertData.precautions.length]);
+
+    const renderProtocolItem = ({ item, index }) => (
+        <View style={styles.carouselItem}>
+            <Image 
+                source={ILLUSTRATIONS[item.graphic] || ILLUSTRATIONS.cyclone_indoor} 
+                style={styles.illustration}
+                resizeMode="contain"
+            />
+            <View style={styles.protocolTextContainer}>
+                <View style={[styles.indexDot, { backgroundColor: theme.container, marginBottom: 8 }]}>
+                    <Text style={{ color: theme.accent, fontWeight: '900', fontSize: 12 }}>{index + 1}</Text>
+                </View>
+                <Text variant="titleMedium" style={styles.instructionTextMain}>
+                    {t(item.text)}
+                </Text>
+            </View>
+        </View>
+    );
 
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -217,7 +265,7 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                         style={[styles.severityChip, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
                         textStyle={styles.severityChipText}
                     >
-                        {theme.label}
+                        {t(`severity.${theme.label.toLowerCase()}`, { defaultValue: theme.label })}
                     </Chip>
                 </Animated.View>
             </View>
@@ -262,24 +310,44 @@ export default function EmergencyAlertScreen({ route, navigation }) {
 
                     <Surface style={styles.descriptionCard} elevation={0}>
                         <Text variant="titleSmall" style={{ color: theme.accent, fontWeight: '800', marginBottom: 6 }}>
-                            INCIDENT UPDATE
+                            {t('emergency.incidentUpdate')}
                         </Text>
                         <Text variant="bodyLarge" style={{ color: '#334155', lineHeight: 24 }}>
                             {alert.description}
                         </Text>
                     </Surface>
 
-                    <Text style={styles.sectionTitle}>IMMEDIATE PROTOCOLS</Text>
-                    {alertData.precautions.slice(0, 4).map((text, idx) => (
-                        <View key={idx} style={styles.instructionRow}>
-                            <View style={[styles.indexDot, { backgroundColor: theme.container }]}>
-                                <Text style={{ color: theme.accent, fontWeight: '900', fontSize: 12 }}>{idx + 1}</Text>
-                            </View>
-                            <Text variant="bodyMedium" style={styles.instructionText}>
-                                {text}
-                            </Text>
+                    <Text style={styles.sectionTitle}>{t('emergency.protocols')}</Text>
+                    
+                    <View style={styles.carouselContainer}>
+                        <FlatList
+                            ref={flatListRef}
+                            data={alertData.precautions}
+                            renderItem={renderProtocolItem}
+                            keyExtractor={(_, index) => index.toString()}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onMomentumScrollEnd={(e) => {
+                                const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 48));
+                                setActiveIntervalIndex(newIndex);
+                            }}
+                            snapToInterval={width - 48}
+                            decelerationRate="fast"
+                        />
+                        
+                        <View style={styles.pagination}>
+                            {alertData.precautions.map((_, i) => (
+                                <View 
+                                    key={i} 
+                                    style={[
+                                        styles.dot, 
+                                        { backgroundColor: i === activeIntervalIndex ? theme.accent : '#CBD5E1' }
+                                    ]} 
+                                />
+                            ))}
                         </View>
-                    ))}
+                    </View>
                 </ScrollView>
             </Animated.View>
 
@@ -297,7 +365,7 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                     style={[styles.primarySafeBtn, { backgroundColor: '#006D3A' }]}
                     onPress={() => handleResponse('SAFE')}
                 >
-                    <Text style={styles.primarySafeText}>I AM SAFE / RESPOND</Text>
+                    <Text style={styles.primarySafeText}>{t('emergency.imSafeLong')}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.secondaryActions}>
@@ -306,14 +374,14 @@ export default function EmergencyAlertScreen({ route, navigation }) {
                         onPress={() => handleResponse('MEDICAL')}
                     >
                         <Icon source="hospital-box" size={20} color="#BA1A1A" />
-                        <Text style={[styles.smallActionText, { color: '#BA1A1A' }]}>MEDICAL</Text>
+                        <Text style={[styles.smallActionText, { color: '#BA1A1A' }]}>{t('emergency.medical')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.smallActionBtn, { borderColor: colors.primary }]}
                         onPress={() => handleResponse('HELP')}
                     >
                         <Icon source="hand-wave" size={20} color={colors.primary} />
-                        <Text style={[styles.smallActionText, { color: colors.primary }]}>SOS HELP</Text>
+                        <Text style={[styles.smallActionText, { color: colors.primary }]}>{t('emergency.sosHelp')}</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -428,11 +496,39 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    instructionText: {
-        color: '#475569',
-        flex: 1,
-        lineHeight: 22,
-        fontWeight: '500',
+    instructionTextMain: {
+        color: '#1E293B',
+        lineHeight: 26,
+        fontWeight: '800',
+        textAlign: 'center',
+    },
+    carouselContainer: {
+        marginBottom: 20,
+    },
+    carouselItem: {
+        width: width - 48,
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    illustration: {
+        width: width * 0.6,
+        height: 180,
+        marginBottom: 20,
+    },
+    protocolTextContainer: {
+        alignItems: 'center',
+        paddingHorizontal: 10,
+    },
+    pagination: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+        marginTop: 15,
+    },
+    dot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
     },
     responseBar: {
         position: 'absolute',

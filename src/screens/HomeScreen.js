@@ -103,30 +103,33 @@ export default function HomeScreen({ navigation }) {
       const precautions = info?.precautions || [];
 
       const dos = precautions
-        .filter((line) => !/^(do not|don't)/i.test(line))
+        .filter((item) => !/^(do not|don't)/i.test(t(item.text || item)))
+        .map(item => t(item.text || item))
         .slice(0, 2);
 
       const donts = precautions
-        .filter((line) => /^(do not|don't)/i.test(line))
+        .filter((item) => /^(do not|don't)/i.test(t(item.text || item)))
+        .map(item => t(item.text || item))
         .slice(0, 2);
 
       return {
         type,
         icon: info?.icon || "alert-circle",
         color: info?.color || colors.primary,
-        precaution:
-          precautions[0] || "Follow official instructions and stay calm.",
+        precaution: precautions[0]?.text
+          ? t(precautions[0].text)
+          : t("emergency.action1"),
         dos: dos.length
           ? dos
           : [
-            "Keep emergency contacts ready.",
-            "Move to safer ground if advised.",
+            t("home.checklist.kit"),
+            t("home.checklist.contact"),
           ],
         donts: donts.length
           ? donts
           : [
-            "Don't panic or spread misinformation.",
-            "Don't ignore official advisories.",
+            t("home.noAlertsDesc"),
+            t("home.noActiveDisasters"),
           ],
       };
     });
@@ -177,7 +180,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.appBarTitle}>Stay Safe</Text>
+            <Text style={styles.appBarTitle}>{t('home.staySafe')}</Text>
             <View style={styles.headerActions}>
               <TouchableOpacity
                 onPress={() => navigation.navigate("AlertHistory")}
@@ -208,9 +211,9 @@ export default function HomeScreen({ navigation }) {
           {/* Hero Card */}
           <View style={styles.heroCard}>
             <View style={styles.heroLeft}>
-              <Text style={styles.heroTitle}>Everything looks normal</Text>
+              <Text style={styles.heroTitle}>{t('home.everythingNormal')}</Text>
               <Text style={styles.heroSubtitle}>
-                You will get instant alerts if any new risk appears nearby.
+                {t('home.alertsNearby')}
               </Text>
             </View>
             <Image
@@ -244,7 +247,7 @@ export default function HomeScreen({ navigation }) {
           {/* Safety Carousel */}
           <View style={styles.safetyCarouselWrap}>
             <View style={styles.safetyHeaderRow}>
-              <Text style={styles.sectionTitle}>Safety Measures</Text>
+              <Text style={styles.sectionTitle}>{t('emergency.protocols')}</Text>
               {/* <Text style={styles.safetyHint}>Swipe</Text> */}
             </View>
 
@@ -274,7 +277,7 @@ export default function HomeScreen({ navigation }) {
                     >
                       <Icon source={slide.icon} size={20} color={slide.color} />
                     </View>
-                    <Text style={styles.safetySlideTitle}>{slide.type}</Text>
+                    <Text style={styles.safetySlideTitle}>{t('disasterTypes.' + slide.type)}</Text>
                   </View>
 
                   <Text style={styles.safetyPrimaryText}>
@@ -283,7 +286,7 @@ export default function HomeScreen({ navigation }) {
 
                   <View style={styles.safetyColumns}>
                     <View style={styles.safetyColumn}>
-                      <Text style={styles.safetyColumnTitle}>Do</Text>
+                      <Text style={styles.safetyColumnTitle}>{t('common.do')}</Text>
                       {slide.dos.map((line, idx) => (
                         <Text
                           key={`${slide.type}-do-${idx}`}
@@ -294,7 +297,7 @@ export default function HomeScreen({ navigation }) {
                       ))}
                     </View>
                     <View style={styles.safetyColumn}>
-                      <Text style={styles.safetyColumnTitle}>Don't</Text>
+                      <Text style={styles.safetyColumnTitle}>{t('common.dont')}</Text>
                       {slide.donts.map((line, idx) => (
                         <Text
                           key={`${slide.type}-dont-${idx}`}

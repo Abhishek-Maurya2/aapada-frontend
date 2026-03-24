@@ -97,7 +97,7 @@ export default function AlertDetailScreen({ route, navigation }) {
                             <Icon source="arrow-left" size={20} color={colors.primary} />
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.headerTitle}>{alert.alertType || 'Alert'} Details</Text>
+                            <Text style={styles.headerTitle}>{t('disasterTypes.' + (alert.alertType || 'Other'))} {t('alertDetail.title')}</Text>
                         </View>
                         <View style={[styles.flagBadge, { backgroundColor: displayFlagColor }]}>
                             <Icon source="flag-variant" size={14} color="#fff" />
@@ -116,7 +116,7 @@ export default function AlertDetailScreen({ route, navigation }) {
                                 <View style={styles.metaRow}>
                                     <View style={styles.metaItem}>
                                         <Icon source="map-marker" size={14} color={colors.mutedForeground} />
-                                        <Text style={styles.metaText}>{alert.location || 'All Areas'}</Text>
+                                        <Text style={styles.metaText}>{alert.location || t('home.allAreas')}</Text>
                                     </View>
                                     {timeLeft ? (
                                         <View style={styles.metaItem}>
@@ -135,7 +135,7 @@ export default function AlertDetailScreen({ route, navigation }) {
 
                             {alert.additionalInfo ? (
                                 <View style={styles.additionalInfoBox}>
-                                    <Text style={styles.additionalInfoTitle}>Additional Information</Text>
+                                    <Text style={styles.additionalInfoTitle}>{t('alertDetail.details')}</Text>
                                     <Text style={styles.additionalInfoText}>{alert.additionalInfo}</Text>
                                 </View>
                             ) : null}
@@ -143,45 +143,18 @@ export default function AlertDetailScreen({ route, navigation }) {
                     </Surface>
 
                     {/* Precautionary Measures */}
-                    <Text style={styles.sectionTitle}>Safety Instructions</Text>
+                    <Text style={styles.sectionTitle}>{t('emergency.protocols')}</Text>
                     <View style={styles.precautionsContainer}>
                         {alertData.precautions.map((item, index) => (
                             <View key={index} style={styles.precautionItem}>
                                 <View style={[styles.precautionNum, { backgroundColor: displayFlagColor + '20' }]}>
                                     <Text style={[styles.precautionNumText, { color: displayFlagColor }]}>{index + 1}</Text>
                                 </View>
-                                <Text style={styles.precautionText}>{item}</Text>
+                                <Text style={styles.precautionText}>{t(item.text || item)}</Text>
                             </View>
                         ))}
                     </View>
 
-                    {/* Quick Actions */}
-                    <Text style={styles.sectionTitle}>Quick Actions</Text>
-                    <View style={styles.actionsGrid}>
-                        {alertData.actions.map((action) => (
-                            <TouchableOpacity
-                                key={action.id}
-                                style={styles.actionButton}
-                                onPress={() => handleAction(action.id)}
-                                activeOpacity={0.7}
-                            >
-                                <Surface style={styles.actionIconSurface} elevation={1}>
-                                    <Icon source={action.icon} size={24} color={colors.primary} />
-                                </Surface>
-                                <Text style={styles.actionButtonLabel}>{action.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                        <TouchableOpacity
-                            style={styles.actionButton}
-                            onPress={() => handleAction('share')}
-                            activeOpacity={0.7}
-                        >
-                            <Surface style={styles.actionIconSurface} elevation={1}>
-                                <Icon source="share-variant" size={24} color={colors.primary} />
-                            </Surface>
-                            <Text style={styles.actionButtonLabel}>Share Alert</Text>
-                        </TouchableOpacity>
-                    </View>
 
                     {/* Response Section */}
                     <TouchableOpacity
@@ -192,7 +165,7 @@ export default function AlertDetailScreen({ route, navigation }) {
                         <View style={styles.safeCheckmark}>
                             <Text style={styles.safeCheckText}>✓</Text>
                         </View>
-                        <Text style={styles.safeBtnText}>I am safe, don't worry</Text>
+                        <Text style={styles.safeBtnText}>{t("emergency.imSafeDon'tWorry")}</Text>
                     </TouchableOpacity>
 
                     <View style={{ height: 40 }} />
@@ -237,7 +210,7 @@ const styles = StyleSheet.create({
     actionIconSurface: { width: 56, height: 56, borderRadius: 18, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
     actionButtonLabel: { fontSize: 11, fontWeight: '600', color: colors.mutedForeground, textAlign: 'center' },
 
-    safeBtn: { marginTop: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.card, borderWidth: 2, borderRadius: 20, paddingVertical: 18, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
+    safeBtn: { marginTop: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.card, borderWidth: 2, borderRadius: 50, paddingVertical: 18, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
     safeCheckmark: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
     safeCheckText: { fontSize: 12, fontWeight: '700', color: '#fff' },
     safeBtnText: { fontSize: 16, fontWeight: '800', color: colors.primary },

@@ -3,122 +3,122 @@ export const ALERT_PRECAUTIONS = {
         icon: 'earth',
         color: '#8B4513',
         defaultPrecautions: [
-            'Drop to your hands and knees. Cover your head and neck.',
-            'Hold on to your shelter until the shaking stops.',
-            'Stay away from glass, windows, and heavy furniture.',
-            'If outdoors, move to an open area away from buildings.',
+            { text: 'precautions.drop_cover_hold', graphic: 'earthquake_drop' },
+            { text: 'precautions.hold_on', graphic: 'earthquake_drop' },
+            { text: 'precautions.glass_furniture', graphic: 'cyclone_indoor' },
+            { text: 'precautions.open_area', graphic: 'flood_high_ground' },
         ],
         levels: {
             CRITICAL: [
-                'IMMEDIATE SHELTER: Drop, Cover, and Hold on NOW.',
-                'Extreme shaking imminent; stay away from all tall structures.',
-                'Shut off gas and electricity if you can do so instantly.',
-                'Major aftershocks highly likely; do not enter buildings.',
+                { text: 'precautions.immediate_shelter', graphic: 'earthquake_drop' },
+                { text: 'precautions.tall_structures', graphic: 'earthquake_drop' },
+                { text: 'precautions.shut_utilities', graphic: 'cyclone_indoor' },
+                { text: 'precautions.major_aftershocks', graphic: 'earthquake_drop' },
             ],
             HIGH: [
-                'Secure heavy appliances and move away from large windows.',
-                'Identify a safe interior spot away from falling objects.',
-                'Keep your emergency "Go-Bag" within arm\'s reach.',
-                'Stay alert for local emergency broadcast instructions.',
+                { text: 'precautions.secure_appliances', graphic: 'cyclone_indoor' },
+                { text: 'precautions.safe_interior', graphic: 'cyclone_indoor' },
+                { text: 'precautions.go_bag', graphic: 'earthquake_drop' },
+                { text: 'precautions.broadcast_inst', graphic: 'cyclone_indoor' },
             ]
         },
         actions: [
-            { id: 'sos', label: 'SOS Alarm', icon: 'alarm-light' },
-            { id: 'safe_zones', label: 'Nearby Safe Zones', icon: 'map-marker-radius' },
+            { id: 'sos', label: 'emergency.sosHelp', icon: 'alarm-light' },
+            { id: 'safe_zones', label: 'home.safeZones', icon: 'map-marker-radius' },
         ]
     },
     Flood: {
         icon: 'home-flood',
         color: '#0000FF',
         defaultPrecautions: [
-            'Move to higher ground immediately.',
-            'Do not walk or drive through flood waters.',
-            'Turn off utilities at the main switches if safe to do so.',
-            'Keep an emergency kit with food and water ready.',
+            { text: 'precautions.higher_ground', graphic: 'flood_high_ground' },
+            { text: 'precautions.walk_drive_flood', graphic: 'flood_high_ground' },
+            { text: 'precautions.turn_off_switches', graphic: 'cyclone_indoor' },
+            { text: 'precautions.kit_ready', graphic: 'flood_high_ground' },
         ],
         levels: {
             CRITICAL: [
-                'EVACUATE IMMEDIATELY: Flash flood risk is extreme.',
-                'Move to the highest possible ground or building level.',
-                'Abandon vehicles if water begins to surround them.',
-                'Do not touch electrical equipment if you are wet or in water.',
+                { text: 'precautions.evac_flash_flood', graphic: 'flood_high_ground' },
+                { text: 'precautions.highest_possible', graphic: 'flood_high_ground' },
+                { text: 'precautions.abandon_vehicles', graphic: 'flood_high_ground' },
+                { text: 'precautions.electrical_wet', graphic: 'cyclone_indoor' },
             ],
             HIGH: [
-                'Prepare for immediate evacuation; pack essentials.',
-                'Move valuable items to upper floors or high shelves.',
-                'Monitor local water levels and weather stations closely.',
-                'Avoid low-lying roads and underpasses.',
+                { text: 'precautions.pack_essentials', graphic: 'flood_high_ground' },
+                { text: 'precautions.upper_floors', graphic: 'flood_high_ground' },
+                { text: 'precautions.monitor_levels', graphic: 'flood_high_ground' },
+                { text: 'precautions.low_lying_roads', graphic: 'flood_high_ground' },
             ]
         },
         actions: [
-            { id: 'rescue', label: 'Request Rescue', icon: 'lifebuoy' },
-            { id: '112', label: 'Call 112', icon: 'phone' },
+            { id: 'rescue', label: 'alertDetail.immediateActions', icon: 'lifebuoy' },
+            { id: '112', label: 'home.call112', icon: 'phone' },
         ]
     },
     Cyclone: {
         icon: 'weather-hurricane',
         color: '#4682B4',
         defaultPrecautions: [
-            'Stay indoors and keep away from windows.',
-            'Ensure all doors and windows are securely closed.',
-            'Listen to weather updates and local news.',
-            'Keep emergency lights and power banks charged.',
+            { text: 'precautions.indoors_windows', graphic: 'cyclone_indoor' },
+            { text: 'precautions.doors_secure', graphic: 'cyclone_indoor' },
+            { text: 'precautions.weather_updates', graphic: 'cyclone_indoor' },
+            { text: 'precautions.power_banks', graphic: 'cyclone_indoor' },
         ],
         levels: {
             CRITICAL: [
-                'EXTREME DANGER: Stay in the strongest part of your home.',
-                'Stay away from all glass windows and sliding doors.',
-                'If the building begins to fail, protect your head with cushions.',
-                'DO NOT go outside during the "eye" of the storm.',
+                { text: 'precautions.strongest_part', graphic: 'cyclone_indoor' },
+                { text: 'precautions.glass_doors', graphic: 'cyclone_indoor' },
+                { text: 'precautions.protect_head', graphic: 'cyclone_indoor' },
+                { text: 'precautions.eye_storm', graphic: 'cyclone_indoor' },
             ],
             HIGH: [
-                'Board up windows or close heavy curtains/shutters.',
-                'Bring in or secure outdoor furniture and projectiles.',
-                'Charge all communication devices and medical equipment.',
-                'Identify your nearest official cyclone shelter.',
+                { text: 'precautions.board_up', graphic: 'cyclone_indoor' },
+                { text: 'precautions.outdoor_furniture', graphic: 'cyclone_indoor' },
+                { text: 'precautions.charge_devices', graphic: 'cyclone_indoor' },
+                { text: 'precautions.cyclone_shelter', graphic: 'cyclone_indoor' },
             ]
         },
         actions: [
-            { id: '112', label: 'Call 112', icon: 'phone' },
-            { id: 'shelter', label: 'Find Shelter', icon: 'home-variant' },
+            { id: '112', label: 'home.call112', icon: 'phone' },
+            { id: 'shelter', label: 'home.safeZones', icon: 'home-variant' },
         ]
     },
     Tsunami: {
         icon: 'waves',
         color: '#008B8B',
         defaultPrecautions: [
-            'Move inland or to high ground immediately.',
-            'Do not stay near the shore to watch the wave.',
-            'Follow evacuation orders from local authorities.',
-            'Stay tuned to the radio for official information.',
+            { text: 'precautions.inland_high', graphic: 'tsunami_run' },
+            { text: 'precautions.shore_wave', graphic: 'tsunami_run' },
+            { text: 'precautions.official_orders', graphic: 'tsunami_run' },
+            { text: 'precautions.radio_info', graphic: 'cyclone_indoor' },
         ],
         levels: {
             CRITICAL: [
-                'MOVE TO HIGH GROUND NOW: Tsunami wave arrival imminent.',
-                'Do not wait for official sirens if you feel strong shaking.',
-                'Move at least 2 miles inland or 100 feet above sea level.',
-                'Stay away from coastal inlets and river mouths.',
+                { text: 'precautions.tsunami_move_now', graphic: 'tsunami_run' },
+                { text: 'precautions.no_wait_sirens', graphic: 'tsunami_run' },
+                { text: 'precautions.inland_dist', graphic: 'tsunami_run' },
+                { text: 'precautions.river_mouths', graphic: 'tsunami_run' },
             ],
             HIGH: [
-                'Evacuate coastal zones immediately upon warning.',
-                'Stay away from the beach; a tsunami is a series of waves.',
-                'Listen to local maritime authorities for wave height updates.',
-                'Do not return to low-lying areas until "All Clear" is given.',
+                { text: 'precautions.coastal_zones', graphic: 'tsunami_run' },
+                { text: 'precautions.beach_series', graphic: 'tsunami_run' },
+                { text: 'precautions.wave_height', graphic: 'tsunami_run' },
+                { text: 'precautions.all_clear_return', graphic: 'tsunami_run' },
             ]
         },
         actions: [
-            { id: 'evacuate', label: 'Evacuation Route', icon: 'run' },
-            { id: '112', label: 'Call 112', icon: 'phone' },
+            { id: 'evacuate', label: 'home.checklist.evacuation', icon: 'run' },
+            { id: '112', label: 'home.call112', icon: 'phone' },
         ]
     },
     Landslide: {
         icon: 'image-filter-hdr',
         color: '#556B2F',
         defaultPrecautions: [
-            'Avoid areas prone to landslides like steep slopes.',
-            'Stay alert for unusual sounds that might indicate debris flow.',
-            'If near a stream, note any changes in water level.',
-            'Move quickly away from the path of the landslide.',
+            { text: 'Avoid areas prone to landslides like steep slopes.', graphic: 'flood_high_ground' },
+            { text: 'Stay alert for unusual sounds that might indicate debris flow.', graphic: 'flood_high_ground' },
+            { text: 'If near a stream, note any changes in water level.', graphic: 'flood_high_ground' },
+            { text: 'Move quickly away from the path of the landslide.', graphic: 'flood_high_ground' },
         ],
         actions: [
             { id: '112', label: 'Call 112', icon: 'phone' },
@@ -129,38 +129,38 @@ export const ALERT_PRECAUTIONS = {
         icon: 'fire',
         color: '#FF4500',
         defaultPrecautions: [
-            'Evacuate the building immediately.',
-            'Crawl low under smoke to find fresh air.',
-            'Do not use elevators; use the stairs.',
-            'If your clothes catch fire: Stop, Drop, and Roll.',
+            { text: 'precautions.evac_imm', graphic: 'fire_crawl' },
+            { text: 'precautions.crawl_low', graphic: 'fire_crawl' },
+            { text: 'precautions.no_elevators', graphic: 'fire_crawl' },
+            { text: 'precautions.stop_drop_roll', graphic: 'fire_crawl' },
         ],
         levels: {
             CRITICAL: [
-                'IMMEDIATE EVACUATE: Fire is spreading rapidly.',
-                'Touch doors with the back of your hand before opening.',
-                'If trapped, seal door cracks and signal from a window.',
-                'Once out, STAY OUT. Do not go back for any reason.',
+                { text: 'precautions.fire_spread', graphic: 'fire_crawl' },
+                { text: 'precautions.touch_doors', graphic: 'fire_crawl' },
+                { text: 'precautions.seal_cracks', graphic: 'fire_crawl' },
+                { text: 'precautions.stay_out', graphic: 'fire_crawl' },
             ],
             HIGH: [
-                'Prepare for potential evacuation; clear exit paths.',
-                'Move flammable materials away from heat sources.',
-                'Test smoke alarms and ensure extinguishers are ready.',
-                'Map out at least two escape routes for every room.',
+                { text: 'precautions.prepare_evac', graphic: 'fire_crawl' },
+                { text: 'precautions.flammable_mats', graphic: 'fire_crawl' },
+                { text: 'precautions.smoke_alarms', graphic: 'fire_crawl' },
+                { text: 'precautions.escape_routes', graphic: 'fire_crawl' },
             ]
         },
         actions: [
-            { id: 'fire_dept', label: 'Call Fire Dept (101)', icon: 'fire-truck' },
-            { id: '112', label: 'Call 112', icon: 'phone' },
+            { id: 'fire_dept', label: 'alertDetail.emergency', icon: 'fire-truck' },
+            { id: '112', label: 'home.call112', icon: 'phone' },
         ]
     },
     'Industrial Accident': {
         icon: 'factory',
         color: '#708090',
         defaultPrecautions: [
-            'Stay indoors and seal all windows and doors.',
-            'Turn off air conditioning and ventilation systems.',
-            'Listen for official instructions regarding shelter or evacuation.',
-            'If outside, move upwind and away from the source.',
+            { text: 'Stay indoors and seal all windows and doors.', graphic: 'cyclone_indoor' },
+            { text: 'Turn off air conditioning and ventilation systems.', graphic: 'cyclone_indoor' },
+            { text: 'Listen for official instructions regarding shelter or evacuation.', graphic: 'cyclone_indoor' },
+            { text: 'If outside, move upwind and away from the source.', graphic: 'flood_high_ground' },
         ],
         actions: [
             { id: '112', label: 'Call 112', icon: 'phone' },
@@ -171,10 +171,10 @@ export const ALERT_PRECAUTIONS = {
         icon: 'thermometer-alert',
         color: '#FF8C00',
         defaultPrecautions: [
-            'Stay hydrated and drink plenty of water.',
-            'Keep out of the sun during the hottest part of the day.',
-            'Wear light-colored, loose-fitting clothing.',
-            'Check on neighbors, especially the elderly.',
+            { text: 'Stay hydrated and drink plenty of water.', graphic: 'flood_high_ground' },
+            { text: 'Keep out of the sun during the hottest part of the day.', graphic: 'cyclone_indoor' },
+            { text: 'Wear light-colored, loose-fitting clothing.', graphic: 'flood_high_ground' },
+            { text: 'Check on neighbors, especially the elderly.', graphic: 'flood_high_ground' },
         ],
         actions: [
             { id: 'cooling', label: 'Cooling Centers', icon: 'snowflake' },
@@ -185,10 +185,10 @@ export const ALERT_PRECAUTIONS = {
         icon: 'weather-lightning',
         color: '#4B0082',
         defaultPrecautions: [
-            'Stay indoors and avoid using electrical appliances.',
-            'Keep away from windows and doors.',
-            'If outdoors, find shelter in a low-lying area.',
-            'Do not stand under tall trees or near metal objects.',
+            { text: 'Stay indoors and avoid using electrical appliances.', graphic: 'cyclone_indoor' },
+            { text: 'Keep away from windows and doors.', graphic: 'cyclone_indoor' },
+            { text: 'If outdoors, find shelter in a low-lying area.', graphic: 'flood_high_ground' },
+            { text: 'Do not stand under tall trees or near metal objects.', graphic: 'flood_high_ground' },
         ],
         actions: [
             { id: '112', label: 'Call 112', icon: 'phone' },
@@ -199,14 +199,14 @@ export const ALERT_PRECAUTIONS = {
         icon: 'alert-decagram',
         color: '#FF6347',
         defaultPrecautions: [
-            'Stay alert and follow local news updates.',
-            'Keep your emergency kit ready.',
-            'Communicate your status to family and friends.',
-            'Follow instructions from local authorities.',
+            { text: 'precautions.news_updates', graphic: 'cyclone_indoor' },
+            { text: 'home.emergencyChecklist', graphic: 'flood_high_ground' },
+            { text: 'precautions.comms_status', graphic: 'cyclone_indoor' },
+            { text: 'precautions.official_orders', graphic: 'cyclone_indoor' },
         ],
         actions: [
-            { id: '112', label: 'Call 112', icon: 'phone' },
-            { id: 'share', label: 'Share Alert', icon: 'share-variant' },
+            { id: '112', label: 'home.call112', icon: 'phone' },
+            { id: 'share', label: 'common.back', icon: 'share-variant' },
         ]
     }
 };

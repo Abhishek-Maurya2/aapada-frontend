@@ -32,6 +32,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f8cd41ce-3b42-446e-9570-ac527ab8630a"
+      },
+      "githubUpdate": {
+        "owner": "Abhishek-Maurya2",
+        "repo": "aapada-frontend",
+        "channel": "stable"
+      }
     }
   }
 }

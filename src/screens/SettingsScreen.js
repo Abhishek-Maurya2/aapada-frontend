@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Constants from 'expo-constants';
 import {
     View, ScrollView, StyleSheet, TouchableOpacity, Switch, Linking,
-    Modal, Pressable, Image,
+    Modal, Pressable, Image, Alert, ActivityIndicator, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Icon } from 'react-native-paper';
@@ -10,6 +10,7 @@ import { colors, spacing, borderRadius } from '../theme/colors';
 import useStore from '../store/useStore';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '../i18n/i18n';
+import { checkGithubApkUpdate } from '../services/appUpdate';
 
 export default function SettingsScreen({ navigation }) {
     const { t, i18n } = useTranslation();
@@ -20,6 +21,7 @@ export default function SettingsScreen({ navigation }) {
     const [autoLocate, setAutoLocate] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const [langModalVisible, setLangModalVisible] = useState(false);
+    const [checkingUpdate, setCheckingUpdate] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -36,6 +38,45 @@ export default function SettingsScreen({ navigation }) {
     const handleLanguageChange = (langCode) => {
         i18n.changeLanguage(langCode);
         setLangModalVisible(false);
+    };
+
+    const handleCheckForUpdates = async () => {
+        if (Platform.OS !== 'android') {
+            Alert.alert('Updates', 'APK updates are available on Android only.');
+            return;
+        }
+
+        try {
+            setCheckingUpdate(true);
+            const result = await checkGithubApkUpdate();
+
+            if (!result.ok) {
+                Alert.alert('Update check failed', result.message);
+                return;
+            }
+
+            if (!result.updateAvailable) {
+                Alert.alert('No update available', `You are on the latest version (${result.currentVersion}).`);
+                return;
+            }
+
+            const notes = result.releaseName ? `\n\nRelease: ${result.releaseName}` : '';
+            Alert.alert(
+                'Update available',
+                `Current version: ${result.currentVersion}\nLatest version: ${result.latestVersion}${notes}`,
+                [
+                    { text: 'Later', style: 'cancel' },
+                    {
+                        text: 'Download APK',
+                        onPress: () => Linking.openURL(result.apkUrl || result.releaseUrl),
+                    },
+                ]
+            );
+        } catch (error) {
+            Alert.alert('Update check failed', 'Unable to contact GitHub Releases right now.');
+        } finally {
+            setCheckingUpdate(false);
+        }
     };
 
     const SettingToggle = ({ icon, label, description, value, onValueChange }) => (
@@ -56,7 +97,7 @@ export default function SettingsScreen({ navigation }) {
         </View>
     );
 
-    const SettingLink = ({ icon, label, description, onPress, rightText }) => (
+    const SettingLink = ({ icon, label, description, onPress, rightText, loading }) => (
         <TouchableOpacity style={styles.settingRow} onPress={onPress} activeOpacity={0.7}>
             <View style={styles.settingIcon}>
                 <Icon source={icon} size={18} color={colors.primary} />
@@ -65,7 +106,9 @@ export default function SettingsScreen({ navigation }) {
                 <Text style={styles.settingLabel}>{label}</Text>
                 {description && <Text style={styles.settingDesc}>{description}</Text>}
             </View>
-            {rightText ? (
+            {loading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+            ) : rightText ? (
                 <Text style={styles.rightText}>{rightText}</Text>
             ) : (
                 <Icon source="chevron-right" size={18} color={colors.mutedForeground} />
@@ -139,6 +182,14 @@ export default function SettingsScreen({ navigation }) {
                         <SettingLink icon="help-circle" label={t('settings.helpFaq')} onPress={() => { }} />
                         <View style={styles.divider} />
                         <SettingLink icon="message-text" label={t('settings.contactSupport')} onPress={() => Linking.openURL('mailto:support@aapada.app')} />
+                        <View style={styles.divider} />
+                        <SettingLink
+                            icon="download"
+                            label="Check for updates"
+                            description="Download the latest APK from GitHub"
+                            onPress={handleCheckForUpdates}
+                            loading={checkingUpdate}
+                        />
                         <View style={styles.divider} />
                         <SettingLink icon="star" label={t('settings.rateApp')} onPress={() => { }} />
                         <View style={styles.divider} />

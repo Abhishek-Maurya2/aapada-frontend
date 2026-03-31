@@ -40,6 +40,9 @@ jobs:
         id: app_version
         run: |
           APP_VERSION=$(node -p "require('./package.json').version")
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            APP_VERSION="${GITHUB_REF_NAME#v}"
+          fi
           echo "value=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Generate Android project if missing
@@ -106,7 +109,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('apk-v{0}-{1}', steps.app_version.outputs.value, github.run_number) }}
-          name: ${{ format('Aapada APK v{0}', steps.app_version.outputs.value) }}
+          name: ${{ github.ref_type == 'tag' && format('Aapada APK {0}', github.ref_name) || format('Aapada APK v{0}', steps.app_version.outputs.value) }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ github.ref_type != 'tag' }}
           generate_release_notes: true

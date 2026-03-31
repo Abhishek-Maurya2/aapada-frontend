@@ -102,6 +102,6 @@ export const checkGithubApkUpdate = async () => {
         updateAvailable,
         apkUrl: apkAsset.browser_download_url,
         releaseUrl: release.html_url,
-        releaseName: release.name || release.tag_name || '',
+        releaseName: release.tag_name || release.name || '',
     };
 };

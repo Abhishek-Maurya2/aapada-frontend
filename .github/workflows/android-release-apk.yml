@@ -62,32 +62,28 @@ jobs:
 
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
 
-          cat <<EOF >> android/gradle.properties
-          MYAPP_UPLOAD_STORE_FILE=release-keystore.jks
-          MYAPP_UPLOAD_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
-          MYAPP_UPLOAD_KEY_ALIAS=$ANDROID_KEY_ALIAS
-          MYAPP_UPLOAD_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
-          EOF
+          printf '%s\n' "MYAPP_UPLOAD_STORE_FILE=release-keystore.jks" >> android/gradle.properties
+          printf '%s\n' "MYAPP_UPLOAD_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> android/gradle.properties
+          printf '%s\n' "MYAPP_UPLOAD_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> android/gradle.properties
+          printf '%s\n' "MYAPP_UPLOAD_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> android/gradle.properties
 
-            cat <<'EOF' >> android/app/build.gradle
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-              android {
-                signingConfigs {
-                  release {
-                    storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                    storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                    keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                    keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-                  }
-                }
-                buildTypes {
-                  release {
-                    signingConfig signingConfigs.release
-                  }
-                }
-              }
-            }
-            EOF
+          printf '%s\n' "if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {" >> android/app/build.gradle
+          printf '%s\n' "    android {" >> android/app/build.gradle
+          printf '%s\n' "        signingConfigs {" >> android/app/build.gradle
+          printf '%s\n' "            release {" >> android/app/build.gradle
+          printf '%s\n' "                storeFile file(MYAPP_UPLOAD_STORE_FILE)" >> android/app/build.gradle
+          printf '%s\n' "                storePassword MYAPP_UPLOAD_STORE_PASSWORD" >> android/app/build.gradle
+          printf '%s\n' "                keyAlias MYAPP_UPLOAD_KEY_ALIAS" >> android/app/build.gradle
+          printf '%s\n' "                keyPassword MYAPP_UPLOAD_KEY_PASSWORD" >> android/app/build.gradle
+          printf '%s\n' "            }" >> android/app/build.gradle
+          printf '%s\n' "        }" >> android/app/build.gradle
+          printf '%s\n' "        buildTypes {" >> android/app/build.gradle
+          printf '%s\n' "            release {" >> android/app/build.gradle
+          printf '%s\n' "                signingConfig signingConfigs.release" >> android/app/build.gradle
+          printf '%s\n' "            }" >> android/app/build.gradle
+          printf '%s\n' "        }" >> android/app/build.gradle
+          printf '%s\n' "    }" >> android/app/build.gradle
+          printf '%s\n' "}" >> android/app/build.gradle
 
       - name: Build release APK
         run: |

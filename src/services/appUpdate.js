@@ -30,6 +30,15 @@ const compareVersions = (a, b) => {
     return 0;
 };
 
+const parseBuildNumber = (value) => {
+    if (!value) return null;
+    const text = String(value);
+    const match = text.match(/build\s*#?\s*(\d+)/i) || text.match(/\b(\d{3,})\b/);
+    if (!match) return null;
+    const num = Number.parseInt(match[1], 10);
+    return Number.isNaN(num) ? null : num;
+};
+
 const getGithubRepoConfig = () => {
     const cfg = Constants.expoConfig?.extra?.githubUpdate || {};
 
@@ -91,14 +100,24 @@ export const checkGithubApkUpdate = async () => {
         };
     }
 
+    const currentBuild = parseBuildNumber(process.env.EXPO_PUBLIC_BUILD_NUMBER)
+        ?? parseBuildNumber(Constants.nativeBuildVersion)
+        ?? null;
+    const latestBuild = parseBuildNumber(release.name)
+        ?? parseBuildNumber(release.tag_name)
+        ?? null;
+
     const currentVersion = normalizeVersion(Constants.expoConfig?.version || '0.0.0');
     const latestVersion = normalizeVersion(release.tag_name || release.name || '0.0.0');
-    const updateAvailable = compareVersions(latestVersion, currentVersion) > 0;
+
+    const updateAvailable = (currentBuild !== null && latestBuild !== null)
+        ? latestBuild > currentBuild
+        : compareVersions(latestVersion, currentVersion) > 0;
 
     return {
         ok: true,
-        currentVersion,
-        latestVersion,
+        currentVersion: currentBuild !== null ? `Build ${currentBuild}` : currentVersion,
+        latestVersion: latestBuild !== null ? `Build ${latestBuild}` : latestVersion,
         updateAvailable,
         apkUrl: apkAsset.browser_download_url,
         releaseUrl: release.html_url,

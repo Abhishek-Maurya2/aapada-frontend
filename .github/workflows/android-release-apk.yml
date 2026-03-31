@@ -36,14 +36,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Read app version
+      - name: Set build number
         id: app_version
         run: |
-          APP_VERSION=$(node -p "require('./package.json').version")
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            APP_VERSION="${GITHUB_REF_NAME#v}"
-          fi
-          echo "value=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          BUILD_NUMBER=${GITHUB_RUN_NUMBER}
+          echo "value=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Generate Android project if missing
         run: |
@@ -89,6 +86,8 @@ jobs:
           printf '%s\n' "}" >> android/app/build.gradle
 
       - name: Build release APK
+        env:
+          EXPO_PUBLIC_BUILD_NUMBER: ${{ steps.app_version.outputs.value }}
         run: |
           chmod +x android/gradlew
           cd android
@@ -97,7 +96,7 @@ jobs:
       - name: Prepare release artifact
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release.apk "dist/aapada-v${{ steps.app_version.outputs.value }}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/aapada-build-${{ steps.app_version.outputs.value }}.apk"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -108,8 +107,8 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('apk-v{0}-{1}', steps.app_version.outputs.value, github.run_number) }}
-          name: ${{ github.ref_type == 'tag' && format('Aapada APK {0}', github.ref_name) || format('Aapada APK v{0}', steps.app_version.outputs.value) }}
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', steps.app_version.outputs.value) }}
+          name: ${{ format('Aapada Build {0}', steps.app_version.outputs.value) }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ github.ref_type != 'tag' }}
           generate_release_notes: true

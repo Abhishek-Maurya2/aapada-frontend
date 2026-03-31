@@ -69,9 +69,25 @@ jobs:
           MYAPP_UPLOAD_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
           EOF
 
-          perl -0777 -i -pe 's/signingConfigs \{\n\s*debug \{[\s\S]*?\n\s*\}/signingConfigs {\n        debug {\n            storeFile file('\''debug.keystore'\'')\n            storePassword '\''android'\''\n            keyAlias '\''androiddebugkey'\''\n            keyPassword '\''android'\''\n        }\n        release {\n            if (project.hasProperty('\''MYAPP_UPLOAD_STORE_FILE'\'')) {\n                storeFile file(MYAPP_UPLOAD_STORE_FILE)\n                storePassword MYAPP_UPLOAD_STORE_PASSWORD\n                keyAlias MYAPP_UPLOAD_KEY_ALIAS\n                keyPassword MYAPP_UPLOAD_KEY_PASSWORD\n            }\n        }\n    }/s' android/app/build.gradle
-
-          perl -0777 -i -pe 's/signingConfig signingConfigs\.debug/signingConfig signingConfigs.release/' android/app/build.gradle
+            cat <<'EOF' >> android/app/build.gradle
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+              android {
+                signingConfigs {
+                  release {
+                    storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                    storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                    keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                    keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+                  }
+                }
+                buildTypes {
+                  release {
+                    signingConfig signingConfigs.release
+                  }
+                }
+              }
+            }
+            EOF
 
       - name: Build release APK
         run: |

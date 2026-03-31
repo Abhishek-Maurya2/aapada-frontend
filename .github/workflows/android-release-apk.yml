@@ -38,7 +38,15 @@ jobs:
 
       - name: Read app version
         id: app_version
-        run: echo "value=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+        run: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "value=$APP_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Android project if missing
+        run: |
+          if [ ! -f android/gradlew ]; then
+            npx expo prebuild --platform android --non-interactive
+          fi
 
       - name: Build release APK
         run: |

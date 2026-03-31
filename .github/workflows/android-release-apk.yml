@@ -49,13 +49,17 @@ jobs:
           fi
 
       - name: Configure release signing (optional)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "No release keystore secret found, using default debug signing."
+            exit 0
+          fi
+
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
 
           cat <<EOF >> android/gradle.properties
@@ -89,7 +93,6 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.RELEASE_PAT || github.token }}
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('apk-v{0}-{1}', steps.app_version.outputs.value, github.run_number) }}
           name: ${{ format('Aapada APK v{0}', steps.app_version.outputs.value) }}
           target_commitish: ${{ github.sha }}

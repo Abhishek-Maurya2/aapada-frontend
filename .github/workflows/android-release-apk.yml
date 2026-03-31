@@ -48,6 +48,27 @@ jobs:
             npx expo prebuild --platform android --non-interactive
           fi
 
+      - name: Configure release signing (optional)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
+
+          cat <<EOF >> android/gradle.properties
+          MYAPP_UPLOAD_STORE_FILE=release-keystore.jks
+          MYAPP_UPLOAD_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+          MYAPP_UPLOAD_KEY_ALIAS=$ANDROID_KEY_ALIAS
+          MYAPP_UPLOAD_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
+          EOF
+
+          perl -0777 -i -pe 's/signingConfigs \{\n\s*debug \{[\s\S]*?\n\s*\}/signingConfigs {\n        debug {\n            storeFile file('\''debug.keystore'\'')\n            storePassword '\''android'\''\n            keyAlias '\''androiddebugkey'\''\n            keyPassword '\''android'\''\n        }\n        release {\n            if (project.hasProperty('\''MYAPP_UPLOAD_STORE_FILE'\'')) {\n                storeFile file(MYAPP_UPLOAD_STORE_FILE)\n                storePassword MYAPP_UPLOAD_STORE_PASSWORD\n                keyAlias MYAPP_UPLOAD_KEY_ALIAS\n                keyPassword MYAPP_UPLOAD_KEY_PASSWORD\n            }\n        }\n    }/s' android/app/build.gradle
+
+          perl -0777 -i -pe 's/signingConfig signingConfigs\.debug/signingConfig signingConfigs.release/' android/app/build.gradle
+
       - name: Build release APK
         run: |
           chmod +x android/gradlew

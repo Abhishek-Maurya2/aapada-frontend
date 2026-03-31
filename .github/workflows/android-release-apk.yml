@@ -89,6 +89,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.RELEASE_PAT || github.token }}
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('apk-v{0}-{1}', steps.app_version.outputs.value, github.run_number) }}
           name: ${{ format('Aapada APK v{0}', steps.app_version.outputs.value) }}
           target_commitish: ${{ github.sha }}
